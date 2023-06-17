@@ -1,6 +1,6 @@
-package is
+#!/usr/bin/env python
 
-/* IBAN DATA
+data = """
 Albania*AL*false*28*false*true*AL35202111090000000001234567
 Andorra*AD*true*24*false*true*AD1400080001001234567890
 Azerbaijan*AZ*false*28*false*false*AZ77VTBA00000000001234567890
@@ -42,7 +42,7 @@ Belarus*BY*false*28*false*false*BY86AKBB10100000002966000000
 El Salvador*SV*false*28*false*false*SV43ACAT00000000000000123123
 Libya*LY*false*25*false*false*LY38021001000000123456789
 Sudan*SD*false*18*false*false*SD8811123456789012
-Burundi*BI*false*27*false*false*BI4210000100010000332045181
+Burundi*BI*false*27*false*false*BI43220001131012345678912345
 Djibouti*DJ*false*27*false*false*DJ2110002010010409943020008
 Somalia*SO*false*23*false*true*SO061000001123123456789
 Austria*AT*true*20*true*true*AT483200000012345864
@@ -84,103 +84,10 @@ Timor-Leste*TL*false*23*true*false*TL380010012345678910106
 Tunisia*TN*false*24*true*true*TN5904018104004942712345
 United Kingdom*GB*true*22*true*true*GB33BUKB20201555555555
 Russia*RU*false*33*true*true*RU0204452560040702810412345678901
-*/
+"""
 
-import (
-	"fmt"
-	"math/big"
-	"strings"
-)
 
-var ibanPatterns = map[string]int{
-	"AL": 28, "AD": 24, "AZ": 28, "BH": 22, "BR": 29, "BG": 22, "CY": 28,
-	"DO": 28, "EG": 29, "GE": 22, "GI": 23, "GR": 27, "GT": 28, "JO": 30,
-	"KZ": 20, "KW": 30, "LV": 21, "LB": 28, "LT": 20, "LU": 20, "MT": 31,
-	"MU": 30, "MD": 24, "PK": 24, "PS": 29, "QA": 29, "RO": 24, "LC": 32,
-	"ST": 25, "SA": 24, "TR": 26, "AE": 23, "VA": 22, "VG": 24, "UA": 29,
-	"SC": 31, "IQ": 23, "BY": 28, "SV": 28, "LY": 25, "SD": 18, "BI": 27,
-	"DJ": 27, "SO": 23, "AT": 20, "BE": 16, "BA": 20, "CR": 22, "HR": 21,
-	"CZ": 24, "FO": 18, "GL": 18, "DK": 18, "EE": 20, "FI": 18, "FR": 27,
-	"DE": 22, "HU": 28, "IS": 26, "IE": 22, "IL": 23, "IT": 27, "XK": 20,
-	"LI": 21, "MK": 19, "MR": 27, "MC": 27, "ME": 22, "NL": 18, "NO": 15,
-	"PL": 28, "PT": 25, "SM": 27, "RS": 22, "SK": 24, "SI": 19, "ES": 24,
-	"SE": 24, "CH": 21, "TL": 23, "TN": 24, "GB": 22, "RU": 33,
-}
-
-// letterToNumberCache is a cache for the mapLetterToNumber function.
-// Is initialized in init().
-var letterToNumberCache = make(map[rune]int)
-
-// The mapLetterToNumber converts a letter to a number as per IBAN
-// specifications. For example, 'A' is mapped to 10, 'B' to 11 etc.
-func mapLetterToNumber(letter rune) int {
-	if value, ok := letterToNumberCache[letter]; ok {
-		return value
-	}
-
-	return 0
-}
-
-// CalculateIBANChecksum calculates the checksum of an IBAN as per the
-// specifications. This is used to verify the validity of an IBAN number.
-func CalculateIBANChecksum(iban string) *big.Int {
-	iban = strings.ToUpper(iban)
-	mapped := ""
-
-	// Cycle through each IBAN character.
-	for _, letter := range iban {
-		// If it is a letter, convert it to a number using the cache.
-		if letter >= 'A' && letter <= 'Z' {
-			mapped += fmt.Sprintf("%d", mapLetterToNumber(letter))
-		} else {
-			mapped += string(letter)
-		}
-	}
-
-	number := new(big.Int)
-	number.SetString(mapped, 10)
-
-	// Return the module from division by 97.
-	return new(big.Int).Mod(number, big.NewInt(97))
-}
-
-// Iban checks if a given iban has a valid format. If the input
-// matches the pattern for the corresponding country and passes the
-// checksum validation, the function returns true.
-//
-// Example usage:
-//
-//	is.Iban("UA903052992990004149123456789") // Output: true
-//
-// The function performs only a format check, so it does not clean spaces
-// at the beginning and end of a line, does not remove tab characters and
-// carriage returns to a new line. You can use the g.Wedd and g.Trim
-// functions for it:
-//
-//	is.Iban("GB82 WEST 1234 5698 7654 32")                // Output: true
-//	is.Iban("GB82\tWEST 1234 5698 7654 32")               // Output: false
-//	is.Iban(g.Weed("GB82\tWEST 1234 5698 7654 32", " "))  // Output: true
-func Iban(iban string) bool {
-	// Remove spaces and convert to uppercase
-	iban = strings.ToUpper(strings.Replace(iban, " ", "", -1))
-
-	// Check if the length matches the expected length for the country
-	if l, ok := ibanPatterns[iban[0:2]]; !ok || l != len(iban) {
-		return false
-	}
-
-	// Move the first four characters to the end of the string
-	iban = iban[4:] + iban[0:4]
-
-	remainder := CalculateIBANChecksum(iban)
-	return remainder.Cmp(big.NewInt(1)) == 0
-}
-
-// IBAN is a synonym for the Iban function. This naming approach adheres
-// to Go's conventions for abbreviations in function names. The function
-// takes an IBAN (International Bank Account Number) as a string parameter
-// and returns a boolean value indicating whether the input IBAN is valid
-// according to the defined pattern and checksum.
-func IBAN(iban string) bool {
-	return Iban(iban)
-}
+lines = data.splitlines()
+for l in lines:
+    chunks= l.split('*')
+    print("{{\"{}\", \"{}\", true}},".format(chunks[0], chunks[-1]))
