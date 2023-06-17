@@ -6,7 +6,9 @@ import (
 	"github.com/goloop/g"
 )
 
-func TestIban(t *testing.T) {
+// TestIBAN tests the IBAN function.
+// Tests only IBAN function for large coverage.
+func TestIBAN(t *testing.T) {
 	tests := []struct {
 		name  string
 		iban  string
