@@ -88,32 +88,84 @@ func Whole[T Numerable](v T) bool {
 	return g.IsWhole(v)
 }
 
-// Negative returns true if v < 0.
+// Negative verifies if the numerable value v is less than zero.
+// The function uses generic type T, which must satisfy the Numerable
+// type constraint. This function is useful for validating the sign of
+// numerical data.
 //
-// Zero is a special number that is neither positive nor negative.
-// It lies between positive and negative numbers on the number line.
-// It is the only number that does not in any way change the value of
-// another number when it is added to or subtracted from it.
+// Example usage:
+//
+//	is.Negative(5)      // Output: false
+//	is.Negative(-5)     // Output: true
+//	is.Negative(0)      // Output: false
+//	is.Negative(3.14)   // Output: false
+//	is.Negative(-3.14)  // Output: true
+//
+// Please note that zero is neither positive nor negative. It lies
+// between positive and negative numbers on the number line and does
+// not change the value of another number when it is added to or
+// subtracted from it.
 func Negative[T Numerable](v T) bool {
 	return v < 0
 }
 
-// Positive returns true if v > 0.
+// Positive verifies if the numerable value v is greater than zero.
+// The function uses generic type T, which must satisfy the Numerable
+// type constraint. This function is useful for validating the sign of
+// numerical data.
 //
-// Zero is a special number that is neither positive nor negative.
-// It lies between positive and negative numbers on the number line.
-// It is the only number that does not in any way change the value of
-// another number when it is added to or subtracted from it.
+// Example usage:
+//
+//	is.Positive(5)      // Output: true
+//	is.Positive(-5)     // Output: false
+//	is.Positive(0)      // Output: false
+//	is.Positive(3.14)   // Output: true
+//	is.Positive(-3.14)  // Output: false
+//
+// Please note that zero is neither positive nor negative. It lies
+// between positive and negative numbers on the number line and does
+// not change the value of another number when it is added to or
+// subtracted from it.
 func Positive[T Numerable](v T) bool {
 	return v > 0
 }
 
-// Zero returns true if v == 0.
+// Zero checks if the numerable value v is equal to zero.
+// The function uses generic type T, which must satisfy the Numerable
+// type constraint. This function is useful for validating whether the
+// numerical data equals zero.
+//
+// Example usage:
+//
+//	is.Zero(5)      // Output: false
+//	is.Zero(-5)     // Output: false
+//	is.Zero(0)      // Output: true
+//	is.Zero(3.14)   // Output: false
+//	is.Zero(-3.14)  // Output: false
+//
+// Please note that zero is a unique number that is neither positive
+// nor negative. It lies between positive and negative numbers on the
+// number line and does not change the value of another number when it
+// is added to or subtracted from it.
 func Zero[T Numerable](v T) bool {
 	return v == 0
 }
 
-// Natural returns true if value is natural number.
+// Natural checks if the numerable value v is a natural number.
+// A natural number is a positive integer starting from 1. Zero is not
+// considered a natural number. The function uses generic type T, which
+// must satisfy the Numerable type constraint.
+//
+// Example usage:
+//
+//	is.Natural(5)      // Output: true
+//	is.Natural(5.0)    // Output: true
+//	is.Natural(-5)     // Output: false
+//	is.Natural(0)      // Output: false
+//	is.Natural(3.14)   // Output: false
+//
+// Please note that this function checks if the value is a whole number
+// and is positive.
 func Natural[T Numerable](v T) bool {
 	return Whole(v) && Positive(v)
 }
