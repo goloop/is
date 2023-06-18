@@ -202,34 +202,33 @@ func TestUpper(t *testing.T) {
 	}
 }
 
-/*
 // TestTitle tests the Title function.
 func TestTitle(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected bool
 	}{
-		{"Hello World", true},    // titlecased string
-		{"Hello world", false},   // 'world' starts with a lowercase
-		{"HELLO WORLD", false},   // all letters are uppercase
-		{"hELLO wORLD", false},   // words start with a lowercase
-		{"", false},              // empty string
-		{"Hello World!", true},   // titlecased string with punctuation
-		{"Hello123 World", true}, // titlecased string with numbers
-		{"Hello-World", true},    // titlecased string with hyphen
-		{"Hello_World", true},    // titlecased string with underscore
-		{"Hello, World", true},   // titlecased string with comma
-		{"Hello\tWorld", true},   // titlecased string with tab
-		{"Hello\nWorld", true},   // titlecased string with newline
-		{"Hello.World", true},    // titlecased string with dot
-		{"Hello:World", true},    // titlecased string with colon
-		{"Hello;World", true},    // titlecased string with semicolon
-		{"Hello?World", true},    // titlecased string with question mark
-		{"Hello!World", true},    // titlecased string with exclamation mark
-		{"Hello( )World", true},  // titlecased string with parentheses
-		{"Hello{ }World", true},  // titlecased string with braces
-		{"Hello[ ]World", true},  // titlecased string with brackets
-		{"Hello< >World", true},  // titlecased string with angle brackets
+		{"Hello World", true},
+		{"Hello world", false},
+		{"HELLO WORLD", false},
+		{"hELLO wORLD", false},
+		{"", false},
+		{"Hello World!", true},
+		{"Hello123 World", true},
+		{"Hello-World", true},
+		{"Hello_World", true},
+		{"Hello, World", true},
+		{"Hello	World", true},
+		{"Hello\nWorld", true},
+		{"Hello.World", true},
+		{"Hello:World", true},
+		{"Hello;World", true},
+		{"Hello?World", true},
+		{"Hello!World", true},
+		{"Hello( )World", true},
+		{"Hello( )World", true},
+		{"Hello[ ]World", true},
+		{"Hello< >World", true},
 	}
 
 	for _, test := range tests {
@@ -240,7 +239,6 @@ func TestTitle(t *testing.T) {
 		}
 	}
 }
-*/
 
 // TestSpace tests the Space function.
 func TestSpace(t *testing.T) {

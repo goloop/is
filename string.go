@@ -1,6 +1,7 @@
 package is
 
 import (
+	"strings"
 	"unicode"
 )
 
@@ -359,31 +360,29 @@ func Title(s string) bool {
 		return false
 	}
 
-	prevCased := true
+	words := strings.FieldsFunc(s, func(r rune) bool {
+		return !unicode.IsLetter(r)
+	})
 
-	for _, r := range s {
-		if unicode.IsUpper(r) || unicode.IsTitle(r) {
-			if prevCased {
-				return false
+	for _, word := range words {
+		for index, char := range word {
+			if index == 0 {
+				if !unicode.IsUpper(char) {
+					return false
+				}
+			} else {
+				if !unicode.IsLower(char) {
+					return false
+				}
 			}
-			prevCased = true
-		} else if unicode.IsLower(r) {
-			if !prevCased {
-				return false
-			}
-		} else {
-			prevCased = false
 		}
 	}
-
 	return true
 }
 
 // Space checks whether a string consists only of whitespace characters.
 // Whitespace characters includes spaces, tabs, newlines, and other
 // Unicode whitespace characters.
-//
-// This function is analogous to Python's str.isspace() method.
 //
 // Example usage:
 //
