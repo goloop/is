@@ -3,7 +3,7 @@
 //
 // The package provides validation functions that do not pre-clean the data.
 // If the validation data needs to be cleaned, it must be cleaned beforehand,
-// for example using the g module.
+// for example using the g package.
 //
 // Example:
 //

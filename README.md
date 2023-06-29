@@ -3,5 +3,8 @@
 
 # is
 
-The **is** package is validators and sanitizers for different values.
+Package is includes validation functions of various data such as e-mail, bank card number, bank account IBAN, phone number and others.
+
+The package provides validation functions that do not pre-clean the data. If the validation data needs to be cleaned, it must be cleaned beforehand,
+for example using the g package.
 
