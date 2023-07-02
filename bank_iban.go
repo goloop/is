@@ -92,7 +92,7 @@ import (
 	"strings"
 )
 
-var ibanPatterns = map[string]int{
+var ibanLenPatterns = map[string]int{
 	"AL": 28, "AD": 24, "AZ": 28, "BH": 22, "BR": 29, "BG": 22, "CY": 28,
 	"DO": 28, "EG": 29, "GE": 22, "GI": 23, "GR": 27, "GT": 28, "JO": 30,
 	"KZ": 20, "KW": 30, "LV": 21, "LB": 28, "LT": 20, "LU": 20, "MT": 31,
@@ -165,7 +165,7 @@ func Iban(iban string) bool {
 	iban = strings.ToUpper(strings.Replace(iban, " ", "", -1))
 
 	// Check if the length matches the expected length for the country
-	if l, ok := ibanPatterns[iban[0:2]]; !ok || l != len(iban) {
+	if l, ok := ibanLenPatterns[iban[0:2]]; !ok || l != len(iban) {
 		return false
 	}
 
