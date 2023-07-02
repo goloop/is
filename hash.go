@@ -2,6 +2,7 @@ package is
 
 import (
 	"regexp"
+	"strings"
 )
 
 var (
@@ -16,6 +17,20 @@ var (
 	base64Regex = regexp.MustCompile(
 		`^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|` +
 			`[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{4})$`,
+	)
+
+	// The base64URLRegex is a regex pattern used to validate
+	// URL-safe Base64 encoded strings.
+	// It matches strings that:
+	//  - consist of sequences of 4 valid URL-safe Base64 characters
+	//    (A-Za-z0-9_-), repeated 0 or more times.
+	//  - optionally, end with a sequence of 2 valid URL-safe Base64 characters
+	//    followed by '==', or 3 valid URL-safe Base64 characters followed by
+	//    '=', or 4 valid URL-safe Base64 characters.
+	base64URLRegex = regexp.MustCompile(
+		`^(?:[A-Za-z0-9_-]{4})*((?:[A-Za-z0-9_-]{2,4})|` +
+			`(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|` +
+			`[A-Za-z0-9+\\/]{4}))$`,
 	)
 
 	// The hexRegex is a regex pattern used to validate hexadecimal strings.
@@ -63,6 +78,38 @@ var (
 // just the format of Base64 strings.
 func Base64(v string) bool {
 	return base64Regex.MatchString(v)
+}
+
+// Base64URL validates whether a given string 'v' is a valid URL-safe Base64
+// encoded string.
+//
+// URL-safe Base64 encoding is similar to standard Base64 encoding, but it uses
+// different characters to represent the encoded data, making it safe to use in
+// URLs and filenames. The characters '+' and '/' in standard Base64 encoding
+// are replaced with '-' and '_' respectively in URL-safe Base64 encoding.
+// The padding character '=' is also used in URL-safe Base64 encoding.
+//
+// This function uses a regular expression to verify that the input string
+// conforms to the format of a URL-safe Base64 encoded string. It checks if
+// the string can be evenly divided by 4, and only contains valid URL-safe
+// Base64 characters (A-Z, a-z, 0-9, -, and _ for padding). The padding at
+// the end of URL-safe Base64 string, which is one or two '=' characters,
+// is also checked for.
+//
+// If the input string matches this format, the function returns true,
+// indicating that the string is a valid URL-safe Base64 encoded string.
+// Otherwise, it returns false.
+//
+// Example usage:
+//
+//	is.Base64URL("SGVsbG8sIHdvcmxkIQ")    // Returns: true
+//	is.Base64URL("SGVsbG8sIHdvcmxkIQ==")  // Returns: true
+//	is.Base64URL("SGVsbG8sIHdvcmxkIQ===") // Returns: false
+//
+// Note: This function does not validate the content of the encoded data,
+// just the format of URL-safe Base64 strings.
+func Base64URL(v string) bool {
+	return base64URLRegex.MatchString(v)
 }
 
 // Hex validates whether a given string 'v' is a valid hexadecimal value.
@@ -179,4 +226,57 @@ func HexColor(v string) bool {
 // just the syntax and range of values.
 func RGBColor(v string) bool {
 	return rgbColorRegex.MatchString(v)
+}
+
+// JWT checks if the given string is a valid JSON Web Token (JWT).
+// JWTs are used for securely transmitting information between parties
+// as a JSON object. They consist of three parts: header, payload,
+// and signature, separated by dots.
+//
+// This function validates the JWT by performing the following checks:
+// 1. The input string should consist of three parts separated by dots.
+// 2. Each part should be a valid Base64URL encoded string.
+//
+// If the input string passes these checks, the function returns true,
+// indicating that the string is a valid JWT. Otherwise, it returns false.
+//
+// Example usage:
+//
+//	is.JWT("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIi" +
+//	       "wibWVzc2FnZSI6IkhlbGxvIFdvcmxkIiwiaWF0IjoxNTE2MjM5MDIyfQ.pfdTXv" +
+//	       "HNIobiLJJ1MoiNyuzf5ZaUCpMu889Q8AJaWjs") // Returns: true
+//	is.JWT("notajwt") // Returns: false
+func JWT(v string) bool {
+	parts := strings.Split(v, ".")
+	if len(parts) != 3 {
+		return false
+	}
+
+	for _, part := range parts {
+		if !Base64URL(part) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// MD5 checks if the given string is a valid MD5 hash.
+// MD5 is a widely used cryptographic hash function that produces
+// a 128-bit (16-byte) hash value. It is commonly used to verify
+// data integrity and to store passwords.
+//
+// This function validates the MD5 hash by performing the following checks:
+// 1. The input string should consist of exactly 32 characters.
+// 2. Each character should be a valid hexadecimal digit (0-9, a-f, A-F).
+//
+// If the input string passes these checks, the function returns true,
+// indicating that the string is a valid MD5 hash. Otherwise, it returns false.
+//
+// Example usage:
+//
+//	is.MD5("d41d8cd98f00b204e9800998ecf8427e") // Returns: true
+//	is.MD5("notamd5hash") // Returns: false
+func MD5(v string) bool {
+	return len(v) == 32 && Hex(v)
 }
