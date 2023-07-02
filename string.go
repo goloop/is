@@ -212,12 +212,7 @@ func Numeric(s string) bool {
 		return false
 	}
 
-	// // check for decimal number
-	// if _, err := strconv.ParseFloat(s, 64); err == nil {
-	// 	return true
-	// }
-
-	// check for chinese numerals and regular digits
+	// Check for chinese numerals and regular digits.
 	for _, r := range s {
 		if !unicode.Is(unicode.Number, r) {
 			if _, ok := numbers[r]; !ok {

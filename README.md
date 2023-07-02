@@ -31,8 +31,8 @@ import (
 )
 
 func main() {
-	// Validate a phone number
-	phoneNum := "+3 (8096) 46 200 00"
+	// Validate a phone number.
+	phoneNum := "+380 (96) 46 200 00"
 	if is.Phone(phoneNum) {
 		fmt.Println("Valid phone number")
 	} else {
@@ -55,6 +55,11 @@ func main() {
 	} else {
 		fmt.Println("Invalid coordinates")
 	}
+
+	// Output:
+	// Valid phone number
+	// Valid email address
+	// Valid coordinates
 }
 ```
 
