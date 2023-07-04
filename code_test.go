@@ -5,9 +5,10 @@ import "testing"
 // TestVar tests the Var function.
 func TestVar(t *testing.T) {
 	tests := []struct {
-		name string
-		in   string
-		want bool
+		name   string
+		in     string
+		strong bool
+		want   bool
 	}{
 		{
 			name: "Standard variable name",
@@ -70,14 +71,26 @@ func TestVar(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "Reserved keyword in Go",
+			name: "Reserved keyword in Go but strong false",
 			in:   "return",
-			want: false,
+			want: true,
+		},
+		{
+			name:   "Reserved keyword in Go",
+			in:     "return",
+			strong: true,
+			want:   false,
 		},
 		{
 			name: "Reserved keyword in Python",
 			in:   "while",
-			want: false,
+			want: true,
+		},
+		{
+			name:   "Reserved keyword in Python but strong false",
+			in:     "while",
+			strong: true,
+			want:   false,
 		},
 		{
 			name: "Capitalized variable name",
@@ -88,7 +101,7 @@ func TestVar(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Var(tt.in); got != tt.want {
+			if got := Var(tt.in, tt.strong); got != tt.want {
 				t.Errorf("IsVarName() = %v, want %v", got, tt.want)
 			}
 		})

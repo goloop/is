@@ -1,6 +1,10 @@
 package is
 
-import "unicode"
+import (
+	"unicode"
+
+	"github.com/goloop/g"
+)
 
 // The varReservedWords holds a map of reserved words in Python, Go and C++.
 // These words cannot be used as variable names.
@@ -29,23 +33,30 @@ var varReservedWords = map[string]struct{}{
 // Var validates if the given string can be used as a variable
 // name in most programming languages. The function checks if the
 // name starts with a letter or underscore, if it doesn't contain
-// any special characters or spaces, and if it's not a reserved
-// word. Returns true if the given name is valid, false otherwise.
+// any special characters or spaces.
+//
+// The second optional argument can check if the specified name
+// is reserved word (as return, false, if etc.).
+//
+// Returns true if the given name is valid, false otherwise.
 //
 // Example usage:
 //
-//	// Test a valid variable name
+//	// Test a valid variable name.
 //	fmt.Println(Var("myVar"))  // Output: true
 //
-//	// Test a name starting with a digit
+//	// Test a name starting with a digit.
 //	fmt.Println(Var("9myVar"))  // Output: false
 //
-//	// Test a name containing a space
+//	// Test a name containing a space.
 //	fmt.Println(Var("my Var"))  // Output: false
 //
-//	// Test a reserved word
-//	fmt.Println(Var("return"))  // Output: false
-func Var(v string) bool {
+//	// Test a reserved word.
+//	fmt.Println(Var("return"))  // Output: true
+//
+//	// Test a reserved word (strong mode).
+//	fmt.Println(Var("return", true))  // Output: false
+func Var(v string, strong ...bool) bool {
 	// Empty string is not a valid variable name.
 	if v == "" {
 		return false
@@ -67,8 +78,10 @@ func Var(v string) bool {
 	}
 
 	// Check if the name is not a reserved word.
-	if _, ok := varReservedWords[v]; ok {
-		return false
+	if s := g.All(strong...); s {
+		if _, ok := varReservedWords[v]; ok {
+			return false
+		}
 	}
 
 	return true
