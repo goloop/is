@@ -27,10 +27,13 @@ var (
 	//  - optionally, end with a sequence of 2 valid URL-safe Base64 characters
 	//    followed by '==', or 3 valid URL-safe Base64 characters followed by
 	//    '=', or 4 valid URL-safe Base64 characters.
+	//
+	// Note: all base64URL strings:
+	//  `^(?:[A-Za-z0-9_-]{4})*((?:[A-Za-z0-9_-]{2,4})|` +
+	//  `(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|` +
+	//  `[A-Za-z0-9+\\/]{4}))$`
 	base64URLRegex = regexp.MustCompile(
-		`^(?:[A-Za-z0-9_-]{4})*((?:[A-Za-z0-9_-]{2,4})|` +
-			`(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|` +
-			`[A-Za-z0-9+\\/]{4}))$`,
+		`^([A-Za-z0-9_-]{4})*([A-Za-z0-9_-]{2}(==)?|[A-Za-z0-9_-]{3}=?)?$`,
 	)
 
 	// The hexRegex is a regex pattern used to validate hexadecimal strings.
@@ -77,6 +80,10 @@ var (
 // Note: This function does not validate the content of the encoded data,
 // just the format of Base64 strings.
 func Base64(v string) bool {
+	if len(v) == 0 {
+		return false
+	}
+
 	return base64Regex.MatchString(v)
 }
 
@@ -109,6 +116,10 @@ func Base64(v string) bool {
 // Note: This function does not validate the content of the encoded data,
 // just the format of URL-safe Base64 strings.
 func Base64URL(v string) bool {
+	if len(v) == 0 {
+		return false
+	}
+
 	return base64URLRegex.MatchString(v)
 }
 

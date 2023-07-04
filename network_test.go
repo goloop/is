@@ -31,6 +31,21 @@ func TestIPv4(t *testing.T) {
 			ip:   "invalid",
 			want: false,
 		},
+		{
+			name: "IPv4 part with no characters",
+			ip:   "192.168.1.",
+			want: false,
+		},
+		{
+			name: "IPv4 part with more than 3 characters",
+			ip:   "192.168.1000.1",
+			want: false,
+		},
+		{
+			name: "Valid IPv4 address",
+			ip:   "192.168.1.1",
+			want: true,
+		},
 	}
 
 	for _, test := range tests {

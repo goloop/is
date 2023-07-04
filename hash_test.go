@@ -10,6 +10,11 @@ func TestBase64(t *testing.T) {
 		want  bool
 	}{
 		{
+			name:  "Empty string",
+			input: "",
+			want:  false,
+		},
+		{
 			name:  "Valid standard base64",
 			input: "SGVsbG8sIHdvcmxkIQ==",
 			want:  true,
@@ -34,18 +39,58 @@ func TestBase64(t *testing.T) {
 
 // TestBase64URL tests Base64URL function.
 func TestBase64URL(t *testing.T) {
-	validBase64URL := "SGVsbG8sIHdvcmxkIQ"
-	invalidBase64URL := "notabase64url"
-
-	validResult := Base64URL(validBase64URL)
-	if !validResult {
-		t.Errorf("Expected valid Base64URL to return true, got false")
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{
+			name: "Valid Base64URL string without padding",
+			in:   "SGVsbG8sIHdvcmxkIQ",
+			want: true,
+		},
+		{
+			name: "Valid Base64URL string with padding",
+			in:   "SGVsbG8sIHdvcmxkIQ==",
+			want: true,
+		},
+		{
+			name: "Invalid Base64URL string with incorrect padding",
+			in:   "SGVsbG8sIHdvcmxkIQ===",
+			want: false,
+		},
+		{
+			name: "Invalid Base64URL string with invalid characters",
+			in:   "SGVsbG8sIHdvcmxkIQ@#",
+			want: false,
+		},
+		{
+			name: "Empty string",
+			in:   "",
+			want: false,
+		},
 	}
 
-	invalidResult := Base64URL(invalidBase64URL)
-	if invalidResult {
-		t.Errorf("Expected invalid Base64URL to return false, got true")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Base64URL(tt.in)
+			if got != tt.want {
+				t.Errorf("Base64URL(%q) = %v; want %v", tt.in, got, tt.want)
+			}
+		})
 	}
+	//validBase64URL := "SGVsbG8sIHdvcmxkIQ"
+	//invalidBase64URL := "notabase64url"
+	//
+	//validResult := Base64URL(validBase64URL)
+	//if !validResult {
+	//	t.Errorf("Expected valid Base64URL to return true, got false")
+	//}
+	//
+	//invalidResult := Base64URL(invalidBase64URL)
+	//if invalidResult {
+	//	t.Errorf("Expected invalid Base64URL to return false, got true")
+	//}
 }
 
 // TestHex tests Hex function.
@@ -267,6 +312,21 @@ func TestJWT(t *testing.T) {
 		{
 			name: "Not valid JWT",
 			in:   "eyHHGJHgJciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ZSI6IlB1dGl",
+			want: false,
+		},
+		{
+			name: "All parts are valid Base64URL strings",
+			in:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+			want: true,
+		},
+		{
+			name: "One part is not a valid Base64URL string",
+			in:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.#notbase64url#.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+			want: false,
+		},
+		{
+			name: "Multiple parts are not valid Base64URL strings",
+			in:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.+notbase64url+.$notbase64url$",
 			want: false,
 		},
 	}

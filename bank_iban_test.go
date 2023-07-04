@@ -6,6 +6,43 @@ import (
 	"github.com/goloop/g"
 )
 
+func TestMapLetterToNumber(t *testing.T) {
+	tests := []struct {
+		name string
+		in   rune
+		want int
+	}{
+		{
+			name: "Maps letter A to 10",
+			in:   'A',
+			want: 10,
+		},
+		{
+			name: "Maps letter B to 11",
+			in:   'B',
+			want: 11,
+		},
+		{
+			name: "Maps letter Z to 35",
+			in:   'Z',
+			want: 35,
+		},
+		{
+			name: "Maps undefined letter to 0",
+			in:   '!',
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := mapLetterToNumber(tt.in); got != tt.want {
+				t.Errorf("mapLetterToNumber() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 // TestIBAN tests the IBAN function.
 // Tests only IBAN function for large coverage.
 func TestIBAN(t *testing.T) {

@@ -6,6 +6,56 @@ import (
 	"testing"
 )
 
+// TestCardChecker tests the cardChecker function.
+func TestCardChecker(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{
+			name: "Card number with non-numeric characters",
+			in:   "1234-5678-9012-abcd",
+			want: false,
+		},
+		{
+			name: "Card number with numeric characters out of range",
+			in:   "1234-5678-9012-123:4",
+			want: false,
+		},
+		{
+			name: "Card number with slash",
+			in:   "1234-5678-9012-123/4",
+			want: false,
+		},
+		{
+			name: "Card number with characters less than zero ASCII code",
+			in:   "1234-5678-9012-123/",
+			want: false,
+		},
+		{
+			name: "Card number with characters greater than ten ASCII code",
+			in:   "1234-5678-9012-123:",
+			want: false,
+		},
+		{
+			name: "Valid card number",
+			in:   "4111-1111-1111-1111",
+			want: true,
+		},
+	}
+
+	regex := regexp.MustCompile(`^\d{16}$`)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := cardChecker(tc.in, regex)
+			if got != tc.want {
+				t.Errorf("cardChecker(%q) = %v; want %v", tc.in, got, tc.want)
+			}
+		})
+	}
+}
+
 // TestBankCard tests the BankCard function.
 func TestBankCard(t *testing.T) {
 	tests := []struct {

@@ -34,6 +34,36 @@ func TestIMSI(t *testing.T) {
 			imsi:  "",
 			valid: false,
 		},
+		{
+			name:  "Invalid MCC with non-numeric characters",
+			imsi:  "31a150123456789",
+			valid: false,
+		},
+		{
+			name:  "Invalid MCC with less than three digits",
+			imsi:  "31150123456789",
+			valid: false,
+		},
+		{
+			name:  "Invalid MNC with non-numeric characters",
+			imsi:  "31015a123456789",
+			valid: false,
+		},
+		{
+			name:  "Valid IMSI",
+			imsi:  "310150123456789",
+			valid: true,
+		},
+		{
+			name:  "Valid IMSI with three digits MNC",
+			imsi:  "310150112345678", // Assume 1501 is a valid MNC
+			valid: true,
+		},
+		{
+			name:  "Invalid MNC with non-numeric characters",
+			imsi:  "3101a2145678901", // Assume 1 is not a valid MNC
+			valid: false,
+		},
 	}
 
 	for _, test := range tests {

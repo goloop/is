@@ -35,26 +35,26 @@ var (
 //	is.IMSI("1234567890123456") // Returns: false, length exceeds 15 digits
 //	is.IMSI("310150abc123456")  // Returns: false, invalid characters in MSIN
 func IMSI(imsi string) bool {
-	// Check the length of the IMSI
+	// Check the length of the IMSI.
 	if len(imsi) != 15 {
 		return false
 	}
 
-	// Check the first three digits (MCC)
+	// Check the first three digits (MCC).
 	mccStr := imsi[:3]
 	_, err := strconv.Atoi(mccStr)
 	if err != nil {
 		return false
 	}
 
-	// Check the next two or three digits (MNC)
+	// Check the next two or three digits (MNC).
 	mncStr := imsi[3:5]
 	_, err = strconv.Atoi(mncStr)
 	if err != nil {
 		return false
 	}
 
-	// Check the remaining digits (MSIN)
+	// Check the remaining digits (MSIN).
 	msinStr := imsi[5:]
 	if _, err := strconv.Atoi(msinStr); err != nil {
 		return false

@@ -169,12 +169,9 @@ func cardChecker(n string, regex *regexp.Regexp) bool {
 		ten  = 57
 	)
 
-	// Remove all chracaters except numbers, and check if the result matches
-	// the given regex.
-	clean := g.Preserve(n, g.Numbers)
-	if !regex.MatchString(clean) {
-		return false
-	}
+	// We remove only the delimiters that can be in the card:
+	// a space and a dash (-) symbol.
+	clean := g.Weed(n, " -")
 
 	// Luhn algorithm.
 	p := len(clean) % 2
@@ -196,6 +193,12 @@ func cardChecker(n string, regex *regexp.Regexp) bool {
 	}
 
 	if sum%10 != 0 {
+		return false
+	}
+
+	// Additionally check for a regular expression, because different
+	// banks can have different initial codes.
+	if !regex.MatchString(clean) {
 		return false
 	}
 
