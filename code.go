@@ -1,9 +1,18 @@
 package is
 
 import (
+	"regexp"
 	"unicode"
 
 	"github.com/goloop/g"
+)
+
+var (
+	// The selectorStrictRgex ...
+	selectorStrictRgex = regexp.MustCompile(`^[a-zA-Z_-][a-zA-Z\d_-]*$`)
+
+	// The selectorRgex ...
+	selectorRgex = regexp.MustCompile(`^(#|\.)?[a-zA-Z_-][a-zA-Z\d_-]*$`)
 )
 
 // The varReservedWords holds a map of reserved words in Python, Go and C++.
@@ -30,7 +39,7 @@ var varReservedWords = map[string]struct{}{
 	"void": {}, "volatile": {}, "wchar_t": {},
 }
 
-// Var validates if the given string can be used as a variable
+// VariableName validates if the given string can be used as a variable
 // name in most programming languages. The function checks if the
 // name starts with a letter or underscore, if it doesn't contain
 // any special characters or spaces.
@@ -43,20 +52,20 @@ var varReservedWords = map[string]struct{}{
 // Example usage:
 //
 //	// Test a valid variable name.
-//	fmt.Println(Var("myVar"))  // Output: true
+//	fmt.Println(VariableName("myVar"))  // Output: true
 //
 //	// Test a name starting with a digit.
-//	fmt.Println(Var("9myVar"))  // Output: false
+//	fmt.Println(VariableName("9myVar"))  // Output: false
 //
 //	// Test a name containing a space.
-//	fmt.Println(Var("my Var"))  // Output: false
+//	fmt.Println(VariableName("my VariableName"))  // Output: false
 //
 //	// Test a reserved word.
-//	fmt.Println(Var("return"))  // Output: true
+//	fmt.Println(VariableName("return"))  // Output: true
 //
 //	// Test a reserved word (strong mode).
-//	fmt.Println(Var("return", true))  // Output: false
-func Var(v string, strong ...bool) bool {
+//	fmt.Println(VariableName("return", true))  // Output: false
+func VariableName(v string, strict ...bool) bool {
 	// Empty string is not a valid variable name.
 	if v == "" {
 		return false
@@ -78,11 +87,53 @@ func Var(v string, strong ...bool) bool {
 	}
 
 	// Check if the name is not a reserved word.
-	if s := g.All(strong...); s {
+	if s := g.All(strict...); s {
 		if _, ok := varReservedWords[v]; ok {
 			return false
 		}
 	}
 
 	return true
+}
+
+// Var is synonym for VariableName function.
+func Var(v string, strict ...bool) bool {
+	return VariableName(v, strict...)
+}
+
+// SelectorName checks if the given string is a valid CSS selector name.
+// It supports simple selectors including elements (e.g., "div"), classes
+// (e.g., ".myClass"), and IDs (e.g., "#myID"). It does not support
+// more complex or combined selectors (e.g., "div .myClass",
+// "#myID .myClass", "div > .myClass").
+//
+// The function removes the first character if it's a '.' or '#' symbol,
+// as these are used in CSS syntax but are not part of the actual
+// class or ID name. After this, it checks if the string is empty or
+// doesn't match the valid CSS selector pattern.
+//
+// The second optional parameter starts the check in strict mode,
+// i.e. the leading characters # and . are inadmissible.
+//
+// Example Usage:
+//
+//	is.SelectorName("div")         // Returns: true
+//	is.SelectorName(".myClass")    // Returns: true
+//	is.SelectorName("#myID")       // Returns: true
+//	is.SelectorName("#myID", true) // Returns: false // strict mode
+//	is.SelectorName("div.myClass") // Returns: false
+//	is.SelectorName("")            // Returns: false
+func SelectorName(v string, strict ...bool) bool {
+	// Check for empty string.
+	if len(v) == 0 {
+		return false
+	}
+
+	rgex := g.If(g.All(strict...), selectorStrictRgex, selectorRgex)
+	return rgex.MatchString(v)
+}
+
+// Sel is synonym for SelectorName function.
+func Sel(v string, strict ...bool) bool {
+	return SelectorName(v, strict...)
 }

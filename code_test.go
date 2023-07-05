@@ -2,12 +2,12 @@ package is
 
 import "testing"
 
-// TestVar tests the Var function.
-func TestVar(t *testing.T) {
+// TestVariableName tests the VariableName function.
+func TestVariableName(t *testing.T) {
 	tests := []struct {
 		name   string
 		in     string
-		strong bool
+		strict bool
 		want   bool
 	}{
 		{
@@ -78,7 +78,7 @@ func TestVar(t *testing.T) {
 		{
 			name:   "Reserved keyword in Go",
 			in:     "return",
-			strong: true,
+			strict: true,
 			want:   false,
 		},
 		{
@@ -89,7 +89,7 @@ func TestVar(t *testing.T) {
 		{
 			name:   "Reserved keyword in Python but strong false",
 			in:     "while",
-			strong: true,
+			strict: true,
 			want:   false,
 		},
 		{
@@ -101,9 +101,38 @@ func TestVar(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Var(tt.in, tt.strong); got != tt.want {
+			if got := Var(tt.in, tt.strict); got != tt.want {
 				t.Errorf("IsVarName() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestSelectorName tests the SelectorName function.
+func TestSelectorName(t *testing.T) {
+	cases := []struct {
+		in     string
+		strict bool
+		want   bool
+	}{
+		{"div", false, true},
+		{".myClass", false, true},
+		{"#myID", false, true},
+		{"#myID", true, false},
+		{"div.myClass", false, false},
+		{"#my_id.my-class > a", false, false},
+		{"div.myClass", true, false},
+		{"", false, false},
+		{"invalid@name", false, false},
+		{"#123", false, false},
+		{".123", false, false},
+		{"123", false, false},
+	}
+
+	for _, tc := range cases {
+		got := Sel(tc.in, tc.strict)
+		if got != tc.want {
+			t.Errorf("Selector(%q) = %v; want %v", tc.in, got, tc.want)
+		}
 	}
 }
