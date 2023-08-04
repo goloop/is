@@ -64,3 +64,47 @@ func main() {
 ```
 
 This example demonstrates how to use the Go Is package to validate a phone number, email address, and geographic coordinates. You can import the github.com/goloop/is package and call the corresponding validation functions for the specific data you want to validate. The functions will return a boolean value indicating whether the data is valid or not.
+
+
+## Type definitions
+
+Use the is.Instance function to check for type matching, like `is.Instance[type](object)`. The function returns true if the `object` type is similar to `type`.
+
+The function can take an optional second parameter as a bool value. If it is true, it activates strict mode, where the is.Instance function performs exact type matching.
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/goloop/is"
+)
+
+// A is test struct.
+type A struct {
+    N string
+}
+
+// B is test struct too.
+type B struct {
+    N string
+}
+
+func main() {
+    var a A
+
+    fmt.Println(is.Instance[A](a))        // true
+    fmt.Println(is.Instance[B](a))        // false
+    fmt.Println(is.Instance[struct{}](a)) // true (any struct)
+
+    fmt.Println(is.Instance[A](a, true))        // true (strict mode)
+    fmt.Println(is.Instance[B](a, true))        // true (strict mode)
+    fmt.Println(is.Instance[struct{}](a, true)) // false (strict mode)
+
+    var b []*B
+    fmt.Println(is.Instance[[]*A](b))              // false
+    fmt.Println(is.Instance[[]*B](b))              // true
+    fmt.Println(is.Instance[[]*struct{}](b))       // true
+    fmt.Println(is.Instance[[]*struct{}](b, true)) // false
+}
+```
