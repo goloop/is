@@ -77,34 +77,212 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/goloop/is"
 )
 
-// A is test struct.
-type A struct {
-    N string
+// One is the helper struct.
+type One struct {
+	N string
 }
 
-// B is test struct too.
-type B struct {
-    N string
+// Two is helper struct too with the same field name as One.
+type Two struct {
+	N string
 }
 
 func main() {
-    var a A
+	{
+		// Sequences.
+		// Sequences are arrays, slices and maps.
+		var (
+			a [3]int
+			s []int
+			m map[int]int
+		)
 
-    fmt.Println(is.Instance[A](a))        // true
-    fmt.Println(is.Instance[B](a))        // false
-    fmt.Println(is.Instance[struct{}](a)) // true (any struct)
+		fmt.Println("\nSequences:")
+		// In flexible mode, we simply determine whether an object is
+		// of a certain shape (slice, array, map), ignoring the basic
+		// type and dimensions.
+		fmt.Printf("%-28s%v\n", "a is any array (flex):",
+			is.Instance[[0]uint](a))
+		fmt.Printf("%-28s%v\n", "s is any slice (flex):",
+			is.Instance[[]uint](s))
+		fmt.Printf("%-28s%v\n", "m is any map (flex):",
+			is.Instance[map[uint]uint](m))
 
-    fmt.Println(is.Instance[A](a, true))        // true (strict mode)
-    fmt.Println(is.Instance[B](a, true))        // true (strict mode)
-    fmt.Println(is.Instance[struct{}](a, true)) // false (strict mode)
+		fmt.Printf("\n%-28s%v\n", "a is array (flex):",
+			is.Instance[[3]int](a))
+		fmt.Printf("%-28s%v\n", "s is slice (flex):",
+			is.Instance[[]int](s))
+		fmt.Printf("%-28s%v\n", "m is map (flex):",
+			is.Instance[map[int]int](m))
 
-    var b []*B
-    fmt.Println(is.Instance[[]*A](b))              // false
-    fmt.Println(is.Instance[[]*B](b))              // true
-    fmt.Println(is.Instance[[]*struct{}](b))       // true
-    fmt.Println(is.Instance[[]*struct{}](b, true)) // false
+		// In strict mode, we determine whether an object is of a certain
+		// shape (slice, array, map) and has the same basic type
+		// and dimensions.
+		fmt.Printf("\n%-28s%v\n", "a is any array (strict):",
+			is.Instance[[0]uint](a, true))
+		fmt.Printf("%-28s%v\n", "s is any slice (strict):",
+			is.Instance[[]uint](s, true))
+		fmt.Printf("%-28s%v\n", "m is any map (strict):",
+			is.Instance[map[uint]uint](m, true))
+
+		fmt.Printf("\n%-28s%v\n", "a is array (strict):",
+			is.Instance[[3]int](a, true))
+		fmt.Printf("%-28s%v\n", "s is slice (strict):",
+			is.Instance[[]int](s, true))
+		fmt.Printf("%-28s%v\n", "m is map (strict):",
+			is.Instance[map[int]int](m, true))
+
+		// Sequences:
+		// a is any array (flex):   true
+		// s is any slice (flex):   true
+		// m is any map (flex):     true
+
+		// a is array (flex):       true
+		// s is slice (flex):       true
+		// m is map (flex):         true
+
+		// a is any array (strict): false
+		// s is any slice (strict): false
+		// m is any map (strict):   false
+
+		// a is array (strict):     true
+		// s is slice (strict):     true
+		// m is map (strict):       true
+	}
+
+	{
+		// Simple types and pointers for them.
+		var (
+			intVal     int
+			float63Val float64
+			boolVal    bool
+			stringVal  string
+
+			intPtr     *int
+			float64Ptr *float64
+			boolPtr    *bool
+			stringPtr  *string
+		)
+
+		fmt.Println("\nSimple types:")
+
+		// For simple types, there is no difference in strict or flexible mode.
+		fmt.Printf("%-28s%v\n", "intVal is int:",
+			is.Instance[int](intVal))
+		fmt.Printf("%-28s%v\n", "float63Val is float64:",
+			is.Instance[float64](float63Val))
+		fmt.Printf("%-28s%v\n", "boolVal is bool:",
+			is.Instance[bool](boolVal))
+		fmt.Printf("%-28s%v\n", "stringVal is string:",
+			is.Instance[string](stringVal))
+
+		fmt.Printf("\n%-28s%v\n", "intVal is uint:",
+			is.Instance[uint](intVal))
+		fmt.Printf("%-28s%v\n", "float63Val is float32:",
+			is.Instance[float32](float63Val))
+		fmt.Printf("%-28s%v\n", "boolVal is int:",
+			is.Instance[int](boolVal))
+		fmt.Printf("%-28s%v\n", "stringVal is rune:",
+			is.Instance[rune](stringVal))
+
+		fmt.Printf("\n%-28s%v\n", "intPtr is *int:",
+			is.Instance[*int](intPtr))
+		fmt.Printf("%-28s%v\n", "float64Ptr is *float64:",
+			is.Instance[*float64](float64Ptr))
+		fmt.Printf("%-28s%v\n", "boolPtr is *bool:",
+			is.Instance[*bool](boolPtr))
+		fmt.Printf("%-28s%v\n", "stringPtr is *string:",
+			is.Instance[*string](stringPtr))
+
+		fmt.Printf("\n%-28s%v\n", "intPtr is *uint:",
+			is.Instance[*uint](intPtr))
+		fmt.Printf("%-28s%v\n", "float64Ptr is *float32:",
+			is.Instance[*float32](float64Ptr))
+		fmt.Printf("%-28s%v\n", "boolPtr is *int:",
+			is.Instance[*int](boolPtr))
+		fmt.Printf("%-28s%v\n", "stringPtr is *rune:",
+			is.Instance[*rune](stringPtr))
+
+		// Simple types:
+		// intVal is int:           true
+		// float63Val is float64:   true
+		// boolVal is bool:         true
+		// stringVal is string:     true
+
+		// intVal is uint:          false
+		// float63Val is float32:   false
+		// boolVal is int:          false
+		// stringVal is rune:       false
+
+		// intPtr is *int:          true
+		// float64Ptr is *float64:  true
+		// boolPtr is *bool:        true
+		// stringPtr is *string:    true
+
+		// intPtr is *uint:         false
+		// float64Ptr is *float32:  false
+		// boolPtr is *int:         false
+		// stringPtr is *rune:      false
+	}
+
+	{
+		// Functions.
+		sum := func(a, b int) int { return a + b }
+
+		fmt.Println("\nFunc types:")
+
+		// Flexibel mode determines whether the object is any function.
+		fmt.Printf("%-28s%v\n", "sum is any func (flex):",
+			is.Instance[func()](sum))
+
+		// Strict mode determines whether the object is a function with
+		// the same signature.
+		fmt.Printf("%-28s%v\n", "sum is any func (strict):",
+			is.Instance[func()](sum, true))
+		fmt.Printf("%-28s%v\n", "sum is func(int, int) int:",
+			is.Instance[func(int, int) int](sum, true))
+
+		// Func types:
+		// sum is any func (flex):     true
+		// sum is any func (strict):   false
+		// sum is func(int, int) int:  true
+	}
+
+	{
+		// Structs.
+		var one One
+		fmt.Println("\nStruct types:")
+
+		// Flexibel mode determines whether the object is any struct.
+		fmt.Printf("%-28s%v\n", "one is One struct (flex):",
+			is.Instance[One](one))
+		fmt.Printf("%-28s%v\n", "one is any struct (flex):",
+			is.Instance[struct{}](one))
+
+		// Any struct is struct{} signature but not a different struct,
+		// like Two or Three:
+		fmt.Printf("%-28s%v\n", "one is Two struct (flex):",
+			is.Instance[Two](one))
+
+		// Strict mode determines whether the object is a struct with
+		// the same signature.
+		fmt.Printf("\n%-28s%v\n", "one is One struct (strict):",
+			is.Instance[One](one, true))
+		fmt.Printf("%-28s%v\n", "one is any struct (strict):",
+			is.Instance[struct{}](one, true))
+
+		// Struct types:
+		// one is One struct (flex):   true
+		// one is any struct (flex):   true
+		// one is Two struct (flex):   false
+
+		// one is One struct (strict): true
+		// one is any struct (strict): false
+
+	}
 }
 ```
