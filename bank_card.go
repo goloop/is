@@ -2,8 +2,8 @@ package is
 
 import (
 	"regexp"
-
-	"github.com/goloop/g"
+	"strings"
+	"unicode"
 )
 
 var (
@@ -162,6 +162,49 @@ func BankCard(str string, kinds ...*regexp.Regexp) bool {
 //
 // It returns true if all checks pass, and false otherwise.
 func cardChecker(n string, regex *regexp.Regexp) bool {
+	// Remove spaces and hyphens from the input string.
+	clean := strings.Map(func(r rune) rune {
+		if r == ' ' || r == '-' {
+			return -1 // remove the character
+		}
+		return r
+	}, n)
+
+	var sum int
+	parity := len(clean) % 2
+
+	for i, r := range clean {
+		// Check if the character is a digit.
+		if !unicode.IsDigit(r) {
+			return false
+		}
+
+		d := int(r - '0')
+		if i%2 == parity {
+			d *= 2
+			if d > 9 {
+				d -= 9
+			}
+		}
+
+		sum += d
+	}
+
+	// Check if the sum is a multiple of 10.
+	if sum%10 != 0 {
+		return false
+	}
+
+	// Check the regular expression match.
+	if !regex.MatchString(clean) {
+		return false
+	}
+
+	return true
+}
+
+/*
+func cardChecker(n string, regex *regexp.Regexp) bool {
 	var sum int64
 
 	const (
@@ -204,3 +247,4 @@ func cardChecker(n string, regex *regexp.Regexp) bool {
 
 	return true
 }
+*/
