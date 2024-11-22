@@ -34,7 +34,7 @@ func IPv4(ip string) bool {
 		return false
 	}
 	for _, part := range parts {
-		if len(part) == 0 || len(part) > 3 {
+		if len(part) == 0 || (len(part) > 1 && part[0] == '0') {
 			return false
 		}
 		num, err := strconv.Atoi(part)
