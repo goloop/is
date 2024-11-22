@@ -96,6 +96,10 @@ func IMSI(imsi string) bool {
 // The last digit is a check digit, computed according to the Luhn algorithm.
 func IMEI[T string | int64](imei T) bool {
 	v := fmt.Sprint(imei)
+	if len(v) != 15 {
+		return false
+	}
+
 	sum := 0
 	for i := 0; i < len(v); i++ {
 		digit, _ := strconv.Atoi(string(v[i]))
