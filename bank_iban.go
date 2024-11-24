@@ -124,55 +124,112 @@ func mapLetterToNumber(letter rune) int {
 // CalculateIBANChecksum calculates the checksum of an IBAN as per the
 // specifications. This is used to verify the validity of an IBAN number.
 func CalculateIBANChecksum(iban string) *big.Int {
-	iban = strings.ToUpper(iban)
 	mapped := ""
 
 	// Cycle through each IBAN character.
 	for _, letter := range iban {
-		// If it is a letter, convert it to a number using the cache.
 		if letter >= 'A' && letter <= 'Z' {
+			// Convert the letter to a number.
 			mapped += fmt.Sprintf("%d", mapLetterToNumber(letter))
-		} else {
+		} else if letter >= '0' && letter <= '9' {
+			// Append digits as they are.
 			mapped += string(letter)
+		} else {
+			// Invalid character found.
+			return big.NewInt(-1)
 		}
 	}
 
 	number := new(big.Int)
-	number.SetString(mapped, 10)
+	_, ok := number.SetString(mapped, 10)
+	if !ok {
+		// Error converting string to number.
+		return big.NewInt(-1)
+	}
 
-	// Return the module from division by 97.
+	// Return the remainder from division by 97.
 	return new(big.Int).Mod(number, big.NewInt(97))
 }
 
-// Iban checks if a given iban has a valid format. If the input
-// matches the pattern for the corresponding country and passes the
-// checksum validation, the function returns true.
+// Iban checks if a given IBAN (International Bank Account Number)
+// has a valid format. If the input matches the pattern for the corresponding
+// country and passes the checksum validation, the function returns true.
+//
+// By default, the function operates in non-strict mode. In non-strict mode:
+//   - Spaces are removed from the input string.
+//   - The input string is converted to uppercase.
+//
+// This allows the function to validate IBANs that may have spaces
+// or lowercase letters.
+//
+// If the optional parameter `strict` is provided and set to true,
+// the function operates in strict mode:
+//   - The input string is not modified.
+//   - Any deviations from the standard IBAN format (such as spaces,
+//     lowercase letters, or special characters) will cause the function
+//     to return false.
 //
 // Example usage:
 //
-//	is.Iban("UA903052992990004149123456789") // Output: true
+//	// Non-strict mode (default):
+//	is.Iban("GB82 WEST 1234 5698 7654 32")    // Returns: true
+//	is.Iban("ua903052992990004149123456789")  // Returns: true
 //
-// The function performs only a format check, so it does not clean spaces
-// at the beginning and end of a line, does not remove tab characters and
-// carriage returns to a new line. You can use the g.Wedd and g.Trim
-// functions for it:
+//	// Strict mode:
+//	is.Iban("GB82WEST12345698765432", true)       // Returns: true
+//	is.Iban("GB82 WEST 1234 5698 7654 32", true)  // Returns: false
+//	is.Iban("ua903052992990004149123456789", true)// Returns: false (lowercase)
 //
-//	is.Iban("GB82 WEST 1234 5698 7654 32")                // Output: true
-//	is.Iban("GB82\tWEST 1234 5698 7654 32")               // Output: false
-//	is.Iban(g.Weed("GB82\tWEST 1234 5698 7654 32", " "))  // Output: true
-func Iban(iban string) bool {
-	// Remove spaces and convert to uppercase
-	iban = strings.ToUpper(strings.Replace(iban, " ", "", -1))
+// Note:
+//   - In strict mode, you should ensure that the input IBAN is properly
+//     formatted:
+//   - No spaces or special characters.
+//   - All letters are uppercase.
+//
+// - You can preprocess the IBAN before validation if needed.
+//
+// For example, to validate an IBAN with spaces in strict mode:
+//
+//	iban := "GB82 WEST 1234 5698 7654 32"
+//	iban = strings.ReplaceAll(iban, " ", "")
+//	iban = strings.ToUpper(iban)
+//	is.Iban(iban, true) // Returns: true
+func Iban(iban string, strict ...bool) bool {
+	if !(len(strict) > 0 && strict[0]) {
+		// Remove spaces and convert to uppercase.
+		iban = strings.ToUpper(strings.ReplaceAll(iban, " ", ""))
+	} else {
+		// In strict mode, check for invalid characters.
+		for _, ch := range iban {
+			if ch < '0' || ch > '9' && ch < 'A' || ch > 'Z' {
+				return false
+			}
+		}
+		// Convert to uppercase for checksum calculation.
+		iban = strings.ToUpper(iban)
+	}
 
-	// Check if the length matches the expected length for the country
-	if l, ok := ibanLenPatterns[iban[0:2]]; !ok || l != len(iban) {
+	// IBAN must be at least 4 characters long to extract
+	// country code and checksum.
+	if len(iban) < 4 {
 		return false
 	}
 
-	// Move the first four characters to the end of the string
-	iban = iban[4:] + iban[0:4]
+	// Check if the length matches the expected length for the country.
+	countryCode := iban[0:2]
+	if l, ok := ibanLenPatterns[countryCode]; !ok || l != len(iban) {
+		return false
+	}
 
-	remainder := CalculateIBANChecksum(iban)
+	// Move the first four characters to the end of the string.
+	rearrangedIban := iban[4:] + iban[0:4]
+
+	// Calculate the checksum
+	remainder := CalculateIBANChecksum(rearrangedIban)
+	if remainder.Sign() < 0 {
+		// Invalid character encountered in checksum calculation.
+		return false
+	}
 	return remainder.Cmp(big.NewInt(1)) == 0
 }
 
@@ -181,6 +238,6 @@ func Iban(iban string) bool {
 // takes an IBAN (International Bank Account Number) as a string parameter
 // and returns a boolean value indicating whether the input IBAN is valid
 // according to the defined pattern and checksum.
-func IBAN(iban string) bool {
-	return Iban(iban)
+func IBAN(iban string, strict ...bool) bool {
+	return Iban(iban, strict...)
 }
