@@ -45,8 +45,9 @@ func TestNumeric(t *testing.T) {
 		{"Ⅳ", true},
 		{"1234abc", false},
 		{"", false},
-		{"1.23", false},
-		{"1,23", false},
+		{"1.23", true},
+		{"1,23", true},
+		{"三・十四", true},
 		{"0000", true},
 		{" 1234", false},
 		{"1234 ", false},
@@ -94,6 +95,49 @@ func TestDecimal(t *testing.T) {
 		got := Decimal(tc.input)
 		if got != tc.want {
 			t.Errorf("Decimal(%q) = %v; want %v", tc.input, got, tc.want)
+		}
+	}
+}
+
+// TestFloat tests the Float function.
+func TestFloat(t *testing.T) {
+	testCases := []struct {
+		input string
+		want  bool
+	}{
+		{"0", true},
+		{"123", true},
+		{"123.456", true},
+		{"+123.456", true},
+		{"-123.456", true},
+		{"123.", true},
+		{".456", true},
+		{"0.0", true},
+		{"-.456", true},
+		{"+.456", true},
+		{"123.456.789", false},
+		{"abc", false},
+		{"123a", false},
+		{"", false},
+		{".", false},
+		{"123,456", false},
+		{"123.456e7", false}, // exponential notation not supported
+		{"-0", true},
+		{"-0.0", true},
+		{"--123.456", false},
+		{"123..456", false},
+		{"12.34.56", false},
+		{" 123.456", false},
+		{"123.456 ", false},
+		{"123.456.789.0", false},
+		{"+", false},
+		{"-", false},
+	}
+
+	for _, tc := range testCases {
+		got := Float(tc.input)
+		if got != tc.want {
+			t.Errorf("Float(%q) = %v; want %v", tc.input, got, tc.want)
 		}
 	}
 }

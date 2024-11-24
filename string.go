@@ -194,26 +194,58 @@ func Digit(s string) bool {
 	return true
 }
 
-// Numeric is similar to Digit, but also recognizes numeric characters
-// used in other number systems.
+// Numeric checks whether a string consists only of numeric characters,
+// including digits, decimal separators, and an optional '+' or '-' sign at the beginning.
+// The function recognizes integers and floating-point numbers, as well as
+// digits from various numeral systems and scripts.
 //
-// Returns true if all characters in the string are any numeric and
-// false otherwise. It recognizes numbers (including numbers with a
-// decimal point), Roman numerals, Chinese numerals, and more.
+// Returns true if all characters in the string are numeric, and false otherwise.
+// The function supports decimal separators from different cultures.
 //
 // Example usage:
 //
 //	is.Numeric("1234")     // Output: true
-//	is.Numeric("Ⅳ")        // Output: true
+//	is.Numeric("3.14")     // Output: true
+//	is.Numeric("-456,789") // Output: true (if comma is considered a separator)
+//	is.Numeric("Ⅳ")       // Output: true
+//	is.Numeric("三・十四")  // Output: true
 //	is.Numeric("1234abc")  // Output: false
+//	is.Numeric("1.2.3")    // Output: false (more than one decimal separator)
 func Numeric(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
 
-	// Check for chinese numerals and regular digits.
-	for _, r := range s {
-		if !unicode.Is(unicode.Number, r) {
+	var (
+		hasDecimalSeparator bool
+		decimalSeparators   = map[rune]struct{}{
+			'.': {}, // Dot
+			',': {}, // Comma
+			'·': {}, // Middle dot
+			'・': {}, // Japanese separator
+			'٫': {}, // Arabic decimal point
+			'،': {}, // Arabic comma
+			'۔': {}, // Urdu decimal point
+		}
+	)
+
+	for i, r := range s {
+		// Check if the first character is a sign.
+		if i == 0 && (r == '+' || r == '-') {
+			continue
+		}
+
+		// Check if the character is a decimal separator.
+		if _, isSeparator := decimalSeparators[r]; isSeparator {
+			if hasDecimalSeparator {
+				return false // more than one decimal separator
+			}
+			hasDecimalSeparator = true
+			continue
+		}
+
+		// Check if the character is a number.
+		if !unicode.IsDigit(r) && !unicode.Is(unicode.Number, r) {
 			if _, ok := numbers[r]; !ok {
 				return false
 			}
@@ -245,6 +277,68 @@ func Decimal(s string) bool {
 	}
 
 	return true
+}
+
+// Float returns true if the string represents a floating-point number,
+// where the decimal separator is a dot, and all digits are ASCII digits (0-9).
+// It supports an optional '+' or '-' sign at the beginning and at most one
+// decimal point. It does not support exponential notation or other numeric
+// formats.
+//
+// Example usage:
+//
+//	is.Float("123.456")     // Output: true
+//	is.Float("-0.001")      // Output: true
+//	is.Float("3.14")        // Output: true
+//	is.Float("123")         // Output: true
+//	is.Float("123.")        // Output: true
+//	is.Float(".456")        // Output: true
+//	is.Float("123.456.789") // Output: false
+//	is.Float("abc")         // Output: false
+//	is.Float("123a")        // Output: false
+//	is.Float("123,456")     // Output: false
+func Float(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+
+	var (
+		hasDecimalPoint bool
+		hasDigits       bool
+		startIndex      int
+	)
+
+	// Check for optional sign at the beginning.
+	if s[0] == '+' || s[0] == '-' {
+		startIndex = 1
+	}
+
+	// Edge case: string contains only '+' or '-'.
+	if startIndex >= len(s) {
+		return false
+	}
+
+	for i := startIndex; i < len(s); i++ {
+		r := rune(s[i])
+
+		if r == '.' {
+			if hasDecimalPoint {
+				return false // more than one decimal point
+			}
+			hasDecimalPoint = true
+			continue
+		}
+
+		if r >= '0' && r <= '9' {
+			hasDigits = true
+			continue
+		}
+
+		return false
+	}
+
+	// At least one digit is required.
+	return hasDigits
 }
 
 // Alpha checks whether a string consists only of alphabetic
