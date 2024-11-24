@@ -36,9 +36,6 @@ var (
 //	is.Email(g.Trim(" test@example.com\n"))   // Output: true
 //	is.Email(g.Weed("test\t@example.com\n"))  // Output: true
 func Email(email string) bool {
-	// Convert to lowercase to handle case sensitivity.
-	email = strings.ToLower(email)
-
 	// Check the overall length.
 	if len(email) > 254 || len(email) < 6 {
 		return false

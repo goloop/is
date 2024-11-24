@@ -39,6 +39,7 @@ func TestEmail(t *testing.T) {
 		"michel@hotmail.com":               true,
 		"support@g2mail.com":               true,
 		"MICHEL@hotmail.com":               true,
+		"michel@HOTMAIL.COM":               true,
 		"support@G2MAIL.com":               true,
 		"test@912-wrong-domain902.com":     true,
 		"admin@notarealdomain12345.com":    true,
