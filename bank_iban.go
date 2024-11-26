@@ -207,8 +207,6 @@ func Iban(iban string, strict ...bool) bool {
 				return false
 			}
 		}
-		// Convert to uppercase for checksum calculation.
-		iban = strings.ToUpper(iban)
 	}
 
 	// IBAN must be at least 4 characters long to extract

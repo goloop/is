@@ -626,15 +626,11 @@ var languageConfigs = map[string]languageConfig{
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
-			return unicode.IsLetter(r) || r == '_' || r == '@' || r == '$'
+			return unicode.IsLetter(r) ||
+				r == '_' || r == '@' || r == '$'
 		},
 		validChars: func(r rune) bool {
-			// For Ruby variables and methods, we need to check
-			// the position of the character ? and ! can only be at the end
-			// @@ for class variables
-			// @ for instance variables
-			// $ for global variables
-			return false // replace the logic in the VariableNameFor function
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
 		},
 	},
 	"perl": {
@@ -850,12 +846,12 @@ func isReservedInAnyLanguage(word string) bool {
 func isValidIdentifier(v string, config languageConfig) bool {
 	r := []rune(v)
 
-	// Check if empty
+	// Check for empty string.
 	if len(r) == 0 {
 		return false
 	}
 
-	// If Unicode is not allowed, check all characters
+	// Check for allowed unicode characters.
 	if !config.allowUnicode {
 		for _, c := range r {
 			if c > unicode.MaxASCII {
@@ -864,33 +860,30 @@ func isValidIdentifier(v string, config languageConfig) bool {
 		}
 	}
 
-	// Check if the name starts with a valid character
+	// Check the first character.
 	if !config.checkFirst(r[0]) {
 		return false
 	}
 
-	// Handle Ruby's special case
+	// Special case for Ruby.
 	if config.language == "ruby" {
-		// Remove prefixes @, @@, $
+		// Remove prefixs @, @@, $.
 		if strings.HasPrefix(v, "@@") {
 			r = r[2:]
 		} else if strings.HasPrefix(v, "@") || strings.HasPrefix(v, "$") {
 			r = r[1:]
 		}
 
-		if len(r) == 0 {
-			return false
-		}
-
-		// Check first character after prefix
+		// Check first character after prefix.
 		if !unicode.IsLetter(r[0]) && r[0] != '_' {
 			return false
 		}
 
-		// Check remaining characters
+		// Check other characters.
 		for i, c := range r {
-			if !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_' {
-				// Allow ? and ! only at the end
+			if !config.validChars(c) {
+				// Symbol ? or ! is allowed only at the end
+				// of the variable name.
 				if (c != '?' && c != '!') || i != len(r)-1 {
 					return false
 				}
@@ -900,23 +893,14 @@ func isValidIdentifier(v string, config languageConfig) bool {
 		return true
 	}
 
-	// Check all characters explicitly
-	for _, c := range r {
-		if !config.validChars(c) {
+	// Check other characters.
+	for _, c := range r[1:] {
+		// Special case for @.
+		if c == '@' && !config.checkFirst('@') {
 			return false
 		}
 
-		// Additional checks for special characters that should never be allowed
-		// unless explicitly permitted by checkFirst/validChars
-		if c == ' ' || c == '#' || c == '-' {
-			// These characters are always invalid unless explicitly allowed
-			if !config.validChars(c) {
-				return false
-			}
-		}
-
-		// Special handling for @ - allowed if it's permitted by checkFirst
-		if c == '@' && !config.checkFirst('@') {
+		if !config.validChars(c) {
 			return false
 		}
 	}
@@ -935,8 +919,9 @@ func isValidIdentifier(v string, config languageConfig) bool {
 //   - bool: true if the given name is valid for the specified language;
 //   - error: ErrLanguageNotSupported if the language is not supported.
 func VariableNameFor(v string, language string) (bool, error) {
-	// Empty string is not a valid variable name regardless of language
-	if v == "" {
+	// Empty string is not a valid variable name regardless of language.
+	runes := []rune(v)
+	if len(runes) == 0 {
 		return false, nil
 	}
 
@@ -963,25 +948,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 	}
 
 	// Get language config
-	config, hasConfig := languageConfigs[language]
-	if !hasConfig {
-		config = languageConfig{
-			caseSensitive: true,
-			allowUnicode:  false,
-			checkFirst: func(r rune) bool {
-				return unicode.IsLetter(r) || r == '_'
-			},
-			validChars: func(r rune) bool {
-				return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
-			},
-		}
-	}
-
-	// Convert to runes
-	runes := []rune(v)
-	if len(runes) == 0 {
-		return false, nil
-	}
+	config, _ := languageConfigs[language]
 
 	if langWords, exists := reservedWords[language]; exists {
 		checkWord := v
@@ -1054,9 +1021,6 @@ func VariableNameFor(v string, language string) (bool, error) {
 		// If single ?, ! or only prefix without variable name
 		if len(runes) == 1 && (runes[0] == '?' || runes[0] == '!' ||
 			runes[0] == '@' || runes[0] == '$') {
-			return false, nil
-		}
-		if len(runes) == 2 && runes[0] == '@' && runes[1] == '@' {
 			return false, nil
 		}
 
