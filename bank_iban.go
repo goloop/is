@@ -90,6 +90,8 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+
+	"github.com/goloop/g"
 )
 
 var ibanLenPatterns = map[string]int{
@@ -195,7 +197,7 @@ func CalculateIBANChecksum(iban string) *big.Int {
 //	iban = strings.ToUpper(iban)
 //	is.Iban(iban, true) // Returns: true
 func Iban(iban string, strict ...bool) bool {
-	if !(len(strict) > 0 && strict[0]) {
+	if !g.All(strict...) {
 		// Remove spaces and convert to uppercase.
 		iban = strings.ToUpper(strings.ReplaceAll(iban, " ", ""))
 	} else {
