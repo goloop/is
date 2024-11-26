@@ -553,16 +553,17 @@ var reservedWords = map[string]map[string]struct{}{
 // languageAliases maps different variations of language
 // names to their canonical form.
 var languageAliases = map[string]string{
-	"js":     "javascript",
-	"jsx":    "javascript",
-	"ts":     "typescript",
-	"py":     "python",
-	"rb":     "ruby",
-	"golang": "go",
-	"c++":    "cpp",
-	"cxx":    "cpp",
-	"h":      "cpp",
-	"hpp":    "cpp",
+	"js":      "javascript",
+	"jsx":     "javascript",
+	"ts":      "typescript",
+	"py":      "python",
+	"rb":      "ruby",
+	"golang":  "go",
+	"c++":     "cpp",
+	"cxx":     "cpp",
+	"h":       "cpp",
+	"hpp":     "cpp",
+	"arduino": "cpp",
 }
 
 // languageConfig holds language-specific validation rules.
@@ -925,24 +926,24 @@ func VariableNameFor(v string, language string) (bool, error) {
 		return false, nil
 	}
 
-	// Save original language name for error messages
+	// Save original language name for error messages.
 	originalLanguage := language
 
-	// Normalize language name
+	// Normalize language name.
 	language = strings.TrimSpace(language)
 
-	// Empty language name is not valid
+	// Empty language name is not valid.
 	if language == "" {
 		return false, ErrLanguageNotSupported(originalLanguage)
 	}
 
-	// Convert to lowercase for case-insensitive comparison
+	// Convert to lowercase for case-insensitive comparison.
 	language = strings.ToLower(language)
 	if alias, ok := languageAliases[language]; ok {
 		language = alias
 	}
 
-	// Check if language is supported
+	// Check if language is supported.
 	if !isLanguageSupported(language) {
 		return false, ErrLanguageNotSupported(originalLanguage)
 	}
@@ -953,7 +954,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 	if langWords, exists := reservedWords[language]; exists {
 		checkWord := v
 
-		// Remove prefixes and suffixes for checking reserved words
+		// Remove prefixes and suffixes for checking reserved words.
 		switch language {
 		case "php":
 			if strings.HasPrefix(checkWord, "$") {
@@ -974,7 +975,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 			}
 		}
 
-		// Check for reserved words considering case sensitivity
+		// Check for reserved words considering case sensitivity.
 		if config.caseSensitive {
 			if _, isReserved := langWords[checkWord]; isReserved {
 				return false, nil
@@ -989,9 +990,9 @@ func VariableNameFor(v string, language string) (bool, error) {
 		}
 	}
 
-	// Special cases for Ruby
+	// Special cases for Ruby.
 	if language == "ruby" {
-		// Check for class variables (@@)
+		// Check for class variables (@@).
 		if strings.HasPrefix(v, "@@") {
 			runes = runes[2:] // skip @@ for further checks
 			if len(runes) == 0 {
@@ -1018,7 +1019,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 			}
 		}
 
-		// If single ?, ! or only prefix without variable name
+		// If single ?, ! or only prefix without variable name.
 		if len(runes) == 1 && (runes[0] == '?' || runes[0] == '!' ||
 			runes[0] == '@' || runes[0] == '$') {
 			return false, nil
@@ -1028,11 +1029,11 @@ func VariableNameFor(v string, language string) (bool, error) {
 		runeCount := len(runes)
 		for i, r := range runes {
 			if r == '?' || r == '!' {
-				// If ? or ! is the first character or not at the end
+				// If ? or ! is the first character or not at the end.
 				if i == 0 || i != runeCount-1 {
 					return false, nil
 				}
-				// Check if there is at least one valid character before ? or !
+				// Check if there is at least one valid character before ? or !.
 				prev := runes[i-1]
 				if !unicode.IsLetter(prev) &&
 					!unicode.IsNumber(prev) && prev != '_' {
@@ -1048,25 +1049,25 @@ func VariableNameFor(v string, language string) (bool, error) {
 		return true, nil
 	}
 
-	// Check first character
+	// Check first character.
 	if !config.checkFirst(runes[0]) {
 		return false, nil
 	}
 
-	// Special case for PHP: if starts with $, check the next character
+	// Special case for PHP: if starts with $, check the next character.
 	if language == "php" && runes[0] == '$' {
 		if len(runes) < 2 {
 			return false, nil
 		}
-		runes = runes[1:] // skip $ for further checks
+		runes = runes[1:] // skip $ for further checks.
 		if !unicode.IsLetter(runes[0]) && runes[0] != '_' {
 			return false, nil
 		}
 	}
 
-	// Check remaining characters
+	// Check remaining characters.
 	for _, r := range runes {
-		// For non-Unicode languages, check if character is ASCII
+		// For non-Unicode languages, check if character is ASCII.
 		if !config.allowUnicode && r > unicode.MaxASCII {
 			return false, nil
 		}
@@ -1111,7 +1112,7 @@ func VariableName(v string, strict ...bool) bool {
 		},
 	}
 
-	// Convert to runes for proper Unicode handling
+	// Convert to runes for proper Unicode handling.
 	runes := []rune(v)
 
 	// Check first character
