@@ -53,6 +53,7 @@ func TestIBAN(t *testing.T) {
 		valid  bool
 	}{
 		// Non-strict mode test cases
+		{"Albania", "AL3", false, false}, // invalid length
 		{"Albania", "AL35202111090000000001234567", false, true},
 		{"Andorra", "AD1400080001001234567890", false, true},
 		{"Azerbaijan", "AZ77VTBA00000000001234567890", false, true},

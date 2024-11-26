@@ -206,24 +206,26 @@ var reservedWords = map[string]map[string]struct{}{
 		"check": {}, "default": {}, "having": {},
 	},
 
-	"php": {
-		"abstract": {}, "and": {}, "array": {}, "as": {}, "break": {},
-		"case": {}, "catch": {}, "class": {}, "clone": {}, "const": {},
-		"declare": {}, "default": {}, "die": {}, "do": {}, "echo": {},
-		"elseif": {}, "empty": {}, "enddeclare": {}, "endfor": {},
-		"endif": {}, "endswitch": {}, "endwhile": {}, "eval": {}, "exit": {},
-		"extends": {}, "final": {}, "finally": {}, "fn": {}, "for": {},
-		"function": {}, "global": {}, "goto": {}, "if": {}, "implements": {},
-		"include": {}, "include_once": {}, "instanceof": {}, "insteadof": {},
-		"interface": {}, "isset": {}, "list": {}, "match": {}, "namespace": {},
-		"new": {}, "or": {}, "print": {}, "private": {}, "protected": {},
-		"require": {}, "require_once": {}, "return": {}, "static": {},
-		"throw": {}, "trait": {}, "try": {}, "unset": {}, "use": {},
-		"while": {}, "xor": {}, "yield": {}, "yield from": {},
-		"callable": {}, "continue": {}, "else": {}, "endforeach": {},
-		"foreach": {}, "public": {}, "switch": {}, "var": {}, "true": {},
-		"false": {}, "null": {},
-	},
+	"php": {}, // all variables has $ prefix in PHP
+
+	// "php": {
+	// 	"abstract": {}, "and": {}, "array": {}, "as": {}, "break": {},
+	// 	"case": {}, "catch": {}, "class": {}, "clone": {}, "const": {},
+	// 	"declare": {}, "default": {}, "die": {}, "do": {}, "echo": {},
+	// 	"elseif": {}, "empty": {}, "enddeclare": {}, "endfor": {},
+	// 	"endif": {}, "endswitch": {}, "endwhile": {}, "eval": {}, "exit": {},
+	// 	"extends": {}, "final": {}, "finally": {}, "fn": {}, "for": {},
+	// 	"function": {}, "global": {}, "goto": {}, "if": {}, "implements": {},
+	// 	"include": {}, "include_once": {}, "instanceof": {}, "insteadof": {},
+	// 	"interface": {}, "isset": {}, "list": {}, "match": {}, "namespace": {},
+	// 	"new": {}, "or": {}, "print": {}, "private": {}, "protected": {},
+	// 	"require": {}, "require_once": {}, "return": {}, "static": {},
+	// 	"throw": {}, "trait": {}, "try": {}, "unset": {}, "use": {},
+	// 	"while": {}, "xor": {}, "yield": {}, "yield from": {},
+	// 	"callable": {}, "continue": {}, "else": {}, "endforeach": {},
+	// 	"foreach": {}, "public": {}, "switch": {}, "var": {}, "true": {},
+	// 	"false": {}, "null": {},
+	// },
 
 	"ruby": {
 		"alias": {}, "and": {}, "begin": {}, "break": {}, "case": {},
@@ -565,6 +567,7 @@ var languageAliases = map[string]string{
 
 // languageConfig holds language-specific validation rules.
 type languageConfig struct {
+	language      string          // the language name
 	caseSensitive bool            // is the language case-sensitive
 	allowUnicode  bool            // allow unicode characters in identifiers
 	checkFirst    func(rune) bool // check the first character
@@ -573,6 +576,7 @@ type languageConfig struct {
 
 var languageConfigs = map[string]languageConfig{
 	"python": {
+		language:      "python",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -583,6 +587,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"javascript": {
+		language:      "javascript",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -594,6 +599,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"typescript": {
+		language:      "typescript",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -605,6 +611,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"php": {
+		language:      "php",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -615,6 +622,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"ruby": {
+		language:      "ruby",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -630,6 +638,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"perl": {
+		language:      "perl",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -640,6 +649,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"lua": {
+		language:      "lua",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -650,6 +660,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"go": {
+		language:      "go",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -660,6 +671,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"rust": {
+		language:      "rust",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -670,6 +682,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"cpp": {
+		language:      "cpp",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -680,6 +693,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"c": {
+		language:      "c",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -690,6 +704,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"java": {
+		language:      "java",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -701,6 +716,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"kotlin": {
+		language:      "kotlin",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -711,6 +727,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"swift": {
+		language:      "swift",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -721,6 +738,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"sql": {
+		language:      "sql",
 		caseSensitive: false,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -733,6 +751,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"html": {
+		language:      "html",
 		caseSensitive: false,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -744,6 +763,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"css": {
+		language:      "css",
 		caseSensitive: false,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -754,9 +774,8 @@ var languageConfigs = map[string]languageConfig{
 				unicode.IsNumber(r) || r == '_' || r == '-' || r == '@'
 		},
 	},
-
-	// Інші мови
 	"r": {
+		language:      "r",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -768,6 +787,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"matlab": {
+		language:      "matlab",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -778,6 +798,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"haskell": {
+		language:      "haskell",
 		caseSensitive: true,
 		allowUnicode:  false,
 		checkFirst: func(r rune) bool {
@@ -789,6 +810,7 @@ var languageConfigs = map[string]languageConfig{
 		},
 	},
 	"scala": {
+		language:      "scala",
 		caseSensitive: true,
 		allowUnicode:  true,
 		checkFirst: func(r rune) bool {
@@ -828,14 +850,73 @@ func isReservedInAnyLanguage(word string) bool {
 func isValidIdentifier(v string, config languageConfig) bool {
 	r := []rune(v)
 
-	// Check if the name starts with a valid character.
-	if len(r) == 0 || !config.checkFirst(r[0]) {
+	// Check if empty
+	if len(r) == 0 {
 		return false
 	}
 
-	// Check remaining characters.
+	// If Unicode is not allowed, check all characters
+	if !config.allowUnicode {
+		for _, c := range r {
+			if c > unicode.MaxASCII {
+				return false
+			}
+		}
+	}
+
+	// Check if the name starts with a valid character
+	if !config.checkFirst(r[0]) {
+		return false
+	}
+
+	// Handle Ruby's special case
+	if config.language == "ruby" {
+		// Remove prefixes @, @@, $
+		if strings.HasPrefix(v, "@@") {
+			r = r[2:]
+		} else if strings.HasPrefix(v, "@") || strings.HasPrefix(v, "$") {
+			r = r[1:]
+		}
+
+		if len(r) == 0 {
+			return false
+		}
+
+		// Check first character after prefix
+		if !unicode.IsLetter(r[0]) && r[0] != '_' {
+			return false
+		}
+
+		// Check remaining characters
+		for i, c := range r {
+			if !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_' {
+				// Allow ? and ! only at the end
+				if (c != '?' && c != '!') || i != len(r)-1 {
+					return false
+				}
+			}
+		}
+
+		return true
+	}
+
+	// Check all characters explicitly
 	for _, c := range r {
 		if !config.validChars(c) {
+			return false
+		}
+
+		// Additional checks for special characters that should never be allowed
+		// unless explicitly permitted by checkFirst/validChars
+		if c == ' ' || c == '#' || c == '-' {
+			// These characters are always invalid unless explicitly allowed
+			if !config.validChars(c) {
+				return false
+			}
+		}
+
+		// Special handling for @ - allowed if it's permitted by checkFirst
+		if c == '@' && !config.checkFirst('@') {
 			return false
 		}
 	}
@@ -854,23 +935,34 @@ func isValidIdentifier(v string, config languageConfig) bool {
 //   - bool: true if the given name is valid for the specified language;
 //   - error: ErrLanguageNotSupported if the language is not supported.
 func VariableNameFor(v string, language string) (bool, error) {
-	// Empty string is not a valid variable name.
+	// Empty string is not a valid variable name regardless of language
 	if v == "" {
 		return false, nil
 	}
 
-	// Normalize language name.
-	language = strings.ToLower(strings.TrimSpace(language))
+	// Save original language name for error messages
+	originalLanguage := language
+
+	// Normalize language name
+	language = strings.TrimSpace(language)
+
+	// Empty language name is not valid
+	if language == "" {
+		return false, ErrLanguageNotSupported(originalLanguage)
+	}
+
+	// Convert to lowercase for case-insensitive comparison
+	language = strings.ToLower(language)
 	if alias, ok := languageAliases[language]; ok {
 		language = alias
 	}
 
-	// Check if language is supported.
+	// Check if language is supported
 	if !isLanguageSupported(language) {
-		return false, ErrLanguageNotSupported(language)
+		return false, ErrLanguageNotSupported(originalLanguage)
 	}
 
-	// Get language config.
+	// Get language config
 	config, hasConfig := languageConfigs[language]
 	if !hasConfig {
 		config = languageConfig{
@@ -885,7 +977,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 		}
 	}
 
-	// Convert to runes.
+	// Convert to runes
 	runes := []rune(v)
 	if len(runes) == 0 {
 		return false, nil
@@ -894,7 +986,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 	if langWords, exists := reservedWords[language]; exists {
 		checkWord := v
 
-		// Remove prefixes and suffixes for checking reserved words.
+		// Remove prefixes and suffixes for checking reserved words
 		switch language {
 		case "php":
 			if strings.HasPrefix(checkWord, "$") {
@@ -915,7 +1007,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 			}
 		}
 
-		// Check for reserved words considering case sensitivity.
+		// Check for reserved words considering case sensitivity
 		if config.caseSensitive {
 			if _, isReserved := langWords[checkWord]; isReserved {
 				return false, nil
@@ -930,9 +1022,9 @@ func VariableNameFor(v string, language string) (bool, error) {
 		}
 	}
 
-	// Special cases for Ruby.
+	// Special cases for Ruby
 	if language == "ruby" {
-		// Check for class variables (@@).
+		// Check for class variables (@@)
 		if strings.HasPrefix(v, "@@") {
 			runes = runes[2:] // skip @@ for further checks
 			if len(runes) == 0 {
@@ -959,11 +1051,29 @@ func VariableNameFor(v string, language string) (bool, error) {
 			}
 		}
 
-		// Check if ? or ! are in the middle.
+		// If single ?, ! or only prefix without variable name
+		if len(runes) == 1 && (runes[0] == '?' || runes[0] == '!' ||
+			runes[0] == '@' || runes[0] == '$') {
+			return false, nil
+		}
+		if len(runes) == 2 && runes[0] == '@' && runes[1] == '@' {
+			return false, nil
+		}
+
+		// Check ending character ? or !
 		runeCount := len(runes)
 		for i, r := range runes {
-			if (r == '?' || r == '!') && i != runeCount-1 {
-				return false, nil
+			if r == '?' || r == '!' {
+				// If ? or ! is the first character or not at the end
+				if i == 0 || i != runeCount-1 {
+					return false, nil
+				}
+				// Check if there is at least one valid character before ? or !
+				prev := runes[i-1]
+				if !unicode.IsLetter(prev) &&
+					!unicode.IsNumber(prev) && prev != '_' {
+					return false, nil
+				}
 			}
 			if !unicode.IsLetter(r) && !unicode.IsNumber(r) && r != '_' &&
 				!(i == runeCount-1 && (r == '?' || r == '!')) {
@@ -974,12 +1084,12 @@ func VariableNameFor(v string, language string) (bool, error) {
 		return true, nil
 	}
 
-	// Check first character.
+	// Check first character
 	if !config.checkFirst(runes[0]) {
 		return false, nil
 	}
 
-	// Special case for PHP: if starts with $, check the next character.
+	// Special case for PHP: if starts with $, check the next character
 	if language == "php" && runes[0] == '$' {
 		if len(runes) < 2 {
 			return false, nil
@@ -990,9 +1100,9 @@ func VariableNameFor(v string, language string) (bool, error) {
 		}
 	}
 
-	// Check remaining characters.
+	// Check remaining characters
 	for _, r := range runes {
-		// For non-Unicode languages, check if character is ASCII.
+		// For non-Unicode languages, check if character is ASCII
 		if !config.allowUnicode && r > unicode.MaxASCII {
 			return false, nil
 		}
@@ -1037,10 +1147,22 @@ func VariableName(v string, strict ...bool) bool {
 		},
 	}
 
-	if !isValidIdentifier(v, config) {
+	// Convert to runes for proper Unicode handling
+	runes := []rune(v)
+
+	// Check first character
+	if !config.checkFirst(runes[0]) {
 		return false
 	}
 
+	// Check all characters explicitly
+	for _, r := range runes {
+		if !config.validChars(r) {
+			return false
+		}
+	}
+
+	// Check if word is reserved in any language when strict mode is enabled
 	if g.All(strict...) && isReservedInAnyLanguage(v) {
 		return false
 	}
