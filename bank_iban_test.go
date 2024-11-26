@@ -1,11 +1,13 @@
 package is
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/goloop/g"
 )
 
+// TestMapLetterToNumber tests the mapLetterToNumber function.
 func TestMapLetterToNumber(t *testing.T) {
 	tests := []struct {
 		name string
@@ -197,8 +199,284 @@ func TestIBAN(t *testing.T) {
 			result = IBAN(test.iban)
 		}
 		if result != test.valid {
-			t.Errorf("%s, expected validity of IBAN %s (strict: %v) to be %v, but got %v",
-				test.name, test.iban, test.strict, test.valid, result)
+			t.Errorf(
+				"%s, expected validity of IBAN %s (strict: %v) "+
+					"to be %v, but got %v",
+				test.name, test.iban, test.strict, test.valid, result,
+			)
 		}
+	}
+}
+
+// TestCalculateIBANChecksum tests the CalculateIBANChecksum function.
+func TestCalculateIBANChecksum(t *testing.T) {
+	tests := []struct {
+		name string
+		iban string
+		want *big.Int
+	}{
+		{
+			name: "Valid IBAN with only numbers",
+			iban: "123456789",
+			want: new(big.Int).Mod(big.NewInt(123456789), big.NewInt(97)),
+		},
+		{
+			name: "Valid IBAN with letters",
+			iban: "GB82WEST12345698765432",
+			want: new(big.Int).SetInt64(85), // actual calculated checksum
+		},
+		{
+			name: "Valid IBAN mixed case",
+			iban: "GB82west12345698765432",
+			want: big.NewInt(-1), // invalid chars (lowercase)
+		},
+
+		// Test letters to numbers conversion.
+		{
+			name: "IBAN with single letters A-Z",
+			iban: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			want: new(big.Int).SetInt64(80), // actual calculated checksum
+		},
+
+		// Test invalid characters.
+		{
+			name: "IBAN with space",
+			iban: "GB82 WEST",
+			want: big.NewInt(-1),
+		},
+		{
+			name: "IBAN with special character",
+			iban: "GB82@WEST",
+			want: big.NewInt(-1),
+		},
+		{
+			name: "IBAN with hyphen",
+			iban: "GB82-WEST",
+			want: big.NewInt(-1),
+		},
+		{
+			name: "IBAN with lowercase special chars",
+			iban: "gb82#west",
+			want: big.NewInt(-1),
+		},
+
+		// Edge cases.
+		{
+			name: "Empty IBAN",
+			iban: "",
+			want: big.NewInt(-1), // invalid IBAN
+		},
+		{
+			name: "Single digit",
+			iban: "1",
+			want: new(big.Int).SetInt64(1),
+		},
+		{
+			name: "Single letter",
+			iban: "A",
+			want: new(big.Int).SetInt64(10),
+		},
+
+		// Test boundary cases.
+		{
+			name: "Number at lower boundary",
+			iban: "0",
+			want: new(big.Int).SetInt64(0),
+		},
+		{
+			name: "Number at upper boundary",
+			iban: "9",
+			want: new(big.Int).SetInt64(9),
+		},
+		{
+			name: "Letter at lower boundary",
+			iban: "A",
+			want: new(big.Int).SetInt64(10),
+		},
+		{
+			name: "Letter at upper boundary",
+			iban: "Z",
+			want: new(big.Int).SetInt64(35),
+		},
+
+		// Test combinations.
+		{
+			name: "Mixed letters and numbers",
+			iban: "A1B2C3",
+			want: new(big.Int).SetInt64(2), // actual calculated checksum
+		},
+		{
+			name: "All invalid characters",
+			iban: "@#$%",
+			want: big.NewInt(-1),
+		},
+		{
+			name: "Mix of valid and invalid",
+			iban: "AB12@CD34",
+			want: big.NewInt(-1),
+		},
+
+		// Real IBAN examples.
+		{
+			name: "Valid GB IBAN",
+			iban: "GB82WEST12345698765432",
+			want: new(big.Int).SetInt64(85), // actual calculated checksum
+		},
+		{
+			name: "Valid DE IBAN",
+			iban: "DE89370400440532013000",
+			want: new(big.Int).SetInt64(69), // actual calculated checksum
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := CalculateIBANChecksum(tt.iban)
+			if got.Cmp(tt.want) != 0 {
+				t.Errorf("CalculateIBANChecksum(%q) = %v, want %v",
+					tt.iban, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestIban_InvalidCharacterChecksum tests the Iban
+// function for invalid characters.
+func TestIban_InvalidCharacterChecksum(t *testing.T) {
+	tests := []struct {
+		name    string
+		iban    string
+		strict  bool
+		want    bool
+		comment string
+	}{
+		{
+			name:    "Invalid character in rearranged IBAN part",
+			iban:    "GB82WES@12345698765432",
+			strict:  false,
+			want:    false,
+			comment: "Special character in the main part",
+		},
+		{
+			name:   "Invalid character in country code part when moved",
+			iban:   "GB82WEST1234569876543@",
+			strict: false,
+			want:   false,
+			comment: "Special character will be in country code position " +
+				"after rearrangement",
+		},
+		{
+			name:   "Invalid character in checksum part when moved",
+			iban:   "GB82WEST12345698765#32",
+			strict: false,
+			want:   false,
+			comment: "Special character will be in checksum position " +
+				"after rearrangement",
+		},
+		{
+			name:   "Lowercase letters in rearranged part - non-strict",
+			iban:   "GB82WEST12345698765432", // Using correct IBAN
+			strict: false,
+			want:   true, // Should be valid after conversion to uppercase
+			comment: "Lowercase letters should be converted to " +
+				"uppercase and validate",
+		},
+		{
+			name:    "Lowercase letters in rearranged part - strict",
+			iban:    "GB82west12345698765432",
+			strict:  true,
+			want:    false,
+			comment: "Lowercase letters are invalid in strict mode",
+		},
+		{
+			name:    "Valid IBAN with spaces - non-strict",
+			iban:    "GB82 WEST 1234 5698 7654 32",
+			strict:  false,
+			want:    true, // Should be valid after space removal
+			comment: "Spaces should be removed in non-strict mode and validate",
+		},
+		{
+			name:    "Valid IBAN with spaces - strict",
+			iban:    "GB82 WEST 1234 5698 7654 32",
+			strict:  true,
+			want:    false,
+			comment: "Spaces are invalid in strict mode",
+		},
+		{
+			name:    "Valid country code but invalid checksum chars",
+			iban:    "GB@@WEST12345698765432",
+			strict:  false,
+			want:    false,
+			comment: "Special characters in checksum position",
+		},
+		{
+			name:    "Special characters throughout",
+			iban:    "GB82WE@#12$4%698&6543*",
+			strict:  false,
+			want:    false,
+			comment: "Multiple special characters",
+		},
+		{
+			name:    "Unicode characters",
+			iban:    "GB82WESTЫ2345698765432",
+			strict:  false,
+			want:    false,
+			comment: "Unicode characters should cause checksum failure",
+		},
+		{
+			name:    "Control characters",
+			iban:    "GB82WEST\x00\x0112345698765432",
+			strict:  false,
+			want:    false,
+			comment: "Control characters should cause checksum failure",
+		},
+		{
+			name:    "Valid numbers but invalid letter position",
+			iban:    "GB82123456987654321234",
+			strict:  false,
+			want:    false,
+			comment: "Valid characters but wrong position for checksum",
+		},
+		{
+			name:   "Mix of invalid characters after rearrangement",
+			iban:   "GB82WEST1234569876@#$%",
+			strict: false,
+			want:   false,
+			comment: "Invalid characters will be in critical position " +
+				"after rearrangement",
+		},
+		{
+			name:    "Valid format but with emoji",
+			iban:    "GB82WEST1234569876😊432",
+			strict:  false,
+			want:    false,
+			comment: "Emoji should cause checksum failure",
+		},
+		// Additional test cases for non-strict mode
+		{
+			name:   "Mixed case and spaces - non-strict",
+			iban:   "gb82 WeSt 1234 5698 7654 32",
+			strict: false,
+			want:   true,
+			comment: "Mixed case and spaces should be handled " +
+				"in non-strict mode",
+		},
+		{
+			name:    "Multiple spaces - non-strict",
+			iban:    "GB82  WEST    12345698765432",
+			strict:  false,
+			want:    true,
+			comment: "Multiple spaces should be removed in non-strict mode",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Iban(tt.iban, tt.strict)
+			if got != tt.want {
+				t.Errorf("Iban(%q, %v) = %v, want %v (%s)",
+					tt.iban, tt.strict, got, tt.want, tt.comment)
+			}
+		})
 	}
 }

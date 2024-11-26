@@ -42,6 +42,8 @@ func TestNumeric(t *testing.T) {
 	}{
 		{"0", true},
 		{"1234", true},
+		{"+1234", true},
+		{"-1234", true},
 		{"Ⅳ", true},
 		{"1234abc", false},
 		{"", false},
@@ -51,6 +53,7 @@ func TestNumeric(t *testing.T) {
 		{"0000", true},
 		{" 1234", false},
 		{"1234 ", false},
+		{"1234,,00", false},
 		{"0b10001", false},
 		{"0o21", false},
 		{"0x11", false},

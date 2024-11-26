@@ -113,7 +113,6 @@ func TestVariableName(t *testing.T) {
 
 // TestVar tests the Var function as synonym for VariableName.
 func TestVar(t *testing.T) {
-	// Test one case to ensure Var works the same as VariableName.
 	got := Var("myVar", true)
 	want := true
 
@@ -132,6 +131,13 @@ func TestVariableNameFor(t *testing.T) {
 		want     bool
 		wantErr  error
 	}{
+		{
+			name:     "Empty string",
+			v:        "",
+			language: "go",
+			want:     false,
+			wantErr:  nil,
+		},
 		{
 			name:     "Valid - Go, Non-reserved",
 			v:        "myVar",
@@ -171,6 +177,13 @@ func TestVariableNameFor(t *testing.T) {
 			name:     "Invalid - Java, Reserved",
 			v:        "class",
 			language: "java",
+			want:     false,
+			wantErr:  nil,
+		},
+		{
+			name:     "Just double @@ - Ruby",
+			v:        "@@",
+			language: "ruby",
 			want:     false,
 			wantErr:  nil,
 		},
@@ -756,7 +769,7 @@ func TestLanguageSpecificCases(t *testing.T) {
 		// Kotlin
 		{
 			name:     "Kotlin - unicode allowed",
-			v:        "переменная",
+			v:        "змінна",
 			language: "kotlin",
 			want:     true,
 			wantErr:  nil,
@@ -1015,25 +1028,25 @@ func TestRubySpecificCases(t *testing.T) {
 
 		{
 			name:    "Ruby - unicode variable",
-			v:       "перемінна",
+			v:       "змінна",
 			want:    true,
 			wantErr: nil,
 		},
 		{
 			name:    "Ruby - unicode with @",
-			v:       "@перемінна",
+			v:       "@змінна",
 			want:    true,
 			wantErr: nil,
 		},
 		{
 			name:    "Ruby - unicode with @@",
-			v:       "@@перемінна",
+			v:       "@@змінна",
 			want:    true,
 			wantErr: nil,
 		},
 		{
 			name:    "Ruby - unicode with $",
-			v:       "$перемінна",
+			v:       "$змінна",
 			want:    true,
 			wantErr: nil,
 		},
@@ -1384,162 +1397,204 @@ func TestMATLABSpecificCases(t *testing.T) {
 // TestIsValidIdentifier tests the isValidIdentifier function.
 func TestIsValidIdentifier(t *testing.T) {
 	tests := []struct {
-		name   string
-		v      string
-		config languageConfig
-		want   bool
+		name     string
+		v        string
+		language string
+		want     bool
 	}{
+		// Python
 		{
-			name: "Basic valid identifier",
-			v:    "myVar",
-			config: languageConfig{
-				language:      "unknown",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r) || unicode.IsNumber(r)
-				},
-			},
-			want: true,
+			name:     "Python: Basic valid identifier",
+			v:        "my_var1",
+			language: "python",
+			want:     true,
 		},
 		{
-			name: "Invalid first character",
-			v:    "1var",
-			config: languageConfig{
-				language:      "unknown",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r) || unicode.IsNumber(r)
-				},
-			},
-			want: false,
+			name:     "Python: Invalid first character",
+			v:        "1var",
+			language: "python",
+			want:     false,
 		},
 		{
-			name: "Ruby valid instance variable",
-			v:    "@var",
-			config: languageConfig{
-				language:      "ruby",
-				caseSensitive: true,
-				allowUnicode:  true,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r) || r == '_' || r == '@' || r == '$'
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
-				},
-			},
-			want: true,
+			name:     "Python: Unicode allowed",
+			v:        "变量",
+			language: "python",
+			want:     true,
 		},
 		{
-			name: "Ruby valid class variable",
-			v:    "@@var",
-			config: languageConfig{
-				language:      "ruby",
-				caseSensitive: true,
-				allowUnicode:  true,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r) || r == '_' || r == '@' || r == '$'
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
-				},
-			},
-			want: true,
+			name:     "Python: Unicode not allowed",
+			v:        "变量",
+			language: "c", // C configuration, where Unicode is not allowed
+			want:     false,
+		},
+
+		// JavaScript
+		{
+			name:     "JavaScript: Valid identifier with $",
+			v:        "$myVar",
+			language: "javascript",
+			want:     true,
 		},
 		{
-			name: "Unicode allowed",
-			v:    "变量",
-			config: languageConfig{
-				language:      "unknown",
-				caseSensitive: true,
-				allowUnicode:  true,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-			},
-			want: true,
+			name:     "JavaScript: Invalid character",
+			v:        "my-var",
+			language: "javascript",
+			want:     false,
+		},
+
+		// PHP
+		{
+			name:     "PHP: Valid variable",
+			v:        "$var_name",
+			language: "php",
+			want:     true,
 		},
 		{
-			name: "Unicode not allowed",
-			v:    "变量",
-			config: languageConfig{
-				language:      "typescript",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-			},
-			want: false,
+			name:     "PHP: Invalid variable without $",
+			v:        "var_name",
+			language: "php",
+			want:     false,
 		},
 		{
-			name: "Empty string",
-			v:    "",
-			config: languageConfig{
-				language:      "unknown",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-			},
-			want: false,
+			name:     "PHP: With #",
+			v:        "#var_name",
+			language: "php",
+			want:     false,
 		},
 		{
-			name: "Special chars allowed",
-			v:    "$var",
-			config: languageConfig{
-				language:      "ruby",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r) || r == '$'
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r) || r == '$'
-				},
-			},
-			want: true,
+			name:     "PHP: With @",
+			v:        "@var_name",
+			language: "php",
+			want:     false,
+		},
+
+		// Ruby
+		{
+			name:     "Ruby: Empty string",
+			v:        "",
+			language: "ruby",
+			want:     false,
 		},
 		{
-			name: "Special chars not allowed",
-			v:    "$var",
-			config: languageConfig{
-				language:      "ruby",
-				caseSensitive: true,
-				allowUnicode:  false,
-				checkFirst: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-				validChars: func(r rune) bool {
-					return unicode.IsLetter(r)
-				},
-			},
-			want: false,
+			name:     "Ruby: Valid instance variable",
+			v:        "@var",
+			language: "ruby",
+			want:     true,
+		},
+		{
+			name:     "Ruby: Valid class variable",
+			v:        "@@var",
+			language: "ruby",
+			want:     true,
+		},
+		{
+			name:     "Ruby: Valid global variable",
+			v:        "$var",
+			language: "ruby",
+			want:     true,
+		},
+		{
+			name:     "Ruby: Invalid variable name",
+			v:        "@1var",
+			language: "ruby",
+			want:     false,
+		},
+		{
+			name:     "Ruby: Valid method name with ?",
+			v:        "method?",
+			language: "ruby",
+			want:     true,
+		},
+		{
+			name:     "Ruby: Invalid method name with ? in middle",
+			v:        "met?hod",
+			language: "ruby",
+			want:     false,
+		},
+		{
+			name:     "Ruby: Valid method name with !",
+			v:        "method!",
+			language: "ruby",
+			want:     true,
+		},
+		{
+			name:     "Ruby: Invalid method name with ! in middle",
+			v:        "met!hod",
+			language: "ruby",
+			want:     false,
+		},
+
+		// C
+		{
+			name:     "C: With #",
+			v:        "#myVar123",
+			language: "c",
+			want:     false,
+		},
+		{
+			name:     "C: Valid identifier",
+			v:        "myVar123",
+			language: "c",
+			want:     true,
+		},
+		{
+			name:     "C: Identifier starts with underscore",
+			v:        "_myVar",
+			language: "c",
+			want:     true,
+		},
+		{
+			name:     "C: Invalid identifier with special character",
+			v:        "my-var",
+			language: "c",
+			want:     false,
+		},
+		{
+			name:     "C: Identifier with Unicode character",
+			v:        "变量",
+			language: "c",
+			want:     false,
+		},
+
+		// Haskell
+		{
+			name:     "Haskell: Valid identifier with apostrophe",
+			v:        "var'",
+			language: "haskell",
+			want:     true,
+		},
+		{
+			name:     "Haskell: Invalid identifier with uppercase letter",
+			v:        "Var",
+			language: "haskell",
+			want:     false,
+		},
+		{
+			name:     "Haskell: Invalid identifier starting with number",
+			v:        "1var",
+			language: "haskell",
+			want:     false,
+		},
+		{
+			name:     "Haskell: Valid identifier starting with underscore",
+			v:        "_var",
+			language: "haskell",
+			want:     true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isValidIdentifier(tt.v, tt.config); got != tt.want {
-				t.Errorf("isValidIdentifier(%q) = %v, want %v",
-					tt.v, got, tt.want)
+			config, exists := languageConfigs[tt.language]
+			if !exists {
+				t.Fatalf("Language %q not found in languageConfigs",
+					tt.language)
+			}
+
+			got := isValidIdentifier(tt.v, config)
+			if got != tt.want {
+				t.Errorf("isValidIdentifier(%q, %q config) = %v, want %v",
+					tt.v, tt.language, got, tt.want)
 			}
 		})
 	}
@@ -2126,17 +2181,20 @@ func TestVariableNameFor_PHP_Prefix(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := VariableNameFor(tt.v, tt.language)
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("VariableNameFor(%q, %q) error = %v; wantErr %v", tt.v, tt.language, err, tt.wantErr)
+				t.Errorf("VariableNameFor(%q, %q) error = %v; wantErr %v",
+					tt.v, tt.language, err, tt.wantErr)
 				return
 			}
 			if err != nil && tt.wantErr != nil {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("VariableNameFor(%q, %q) error = %v; wantErr %v", tt.v, tt.language, err, tt.wantErr)
+					t.Errorf("VariableNameFor(%q, %q) error = %v; wantErr %v",
+						tt.v, tt.language, err, tt.wantErr)
 					return
 				}
 			}
 			if got != tt.want {
-				t.Errorf("VariableNameFor(%q, %q) = %v; want %v", tt.v, tt.language, got, tt.want)
+				t.Errorf("VariableNameFor(%q, %q) = %v; want %v",
+					tt.v, tt.language, got, tt.want)
 			}
 		})
 	}
