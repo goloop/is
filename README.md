@@ -144,30 +144,11 @@ func main() {
 }
 ```
 
+
 ## Contributing
 
-Contributions are welcome! Here are a few ways you can help:
-
-1. Report bugs by opening an issue
-2. Suggest new features or improvements
-3. Submit pull requests
-4. Improve documentation
-5. Share the package with others
-
-Please make sure to:
-- Write tests for new features
-- Follow Go coding standards
-- Update documentation as needed
-- Add comments to explain complex logic
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Credits
-
-Created and maintained by [Goloop Team](https://github.com/goloop)
-
-## Related Projects
-
-- [g](https://github.com/goloop/g) - Go utility functions package
