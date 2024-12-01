@@ -1,16 +1,3 @@
-// Package is includes validation functions of various data such as e-mail,
-// bank card number, bank account IBAN, phone number and others.
-//
-// The package provides validation functions that do not pre-clean the data.
-// If the validation data needs to be cleaned, it must be cleaned beforehand,
-// for example using the g package.
-//
-// Example:
-//
-//	data := "UA 90 305299 2990004149123456789" // contains spaces
-//	iban := g.Weed(data, g.Whitespaces)        // remove spaces
-//	is.Iban(iban) // Output: true
-//	is.Iban(data) // Output: false
 package is
 
 import "github.com/goloop/g"
