@@ -1,0 +1,58 @@
+goos: linux
+goarch: arm64
+pkg: github.com/goloop/is
+BenchmarkNickname/ValidSimple-6         	 4546402	       263.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNickname/ValidUnicode-6        	 5315379	       225.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNickname/ValidStrict-6         	 8445592	       144.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNickname/Invalid-6             	 6793458	       177.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNickname/InvalidStrict-6       	18293379	        66.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBankCard/ValidVisa-6           	 4288795	       281.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBankCard/ValidMasterCard-6     	 4697384	       255.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBankCard/ValidAmEx-6           	 4346312	       279.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBankCard/Invalid-6             	18940783	        63.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIBAN/ValidGB-6                 	  579920	      2035 ns/op	     808 B/op	      55 allocs/op
+BenchmarkIBAN/ValidDE-6                 	  691213	      1675 ns/op	     704 B/op	      54 allocs/op
+BenchmarkIBAN/Invalid-6                 	 4199583	       288.5 ns/op	     160 B/op	       7 allocs/op
+BenchmarkVariableName/ValidSimple-6     	 5799820	       216.7 ns/op	     128 B/op	       5 allocs/op
+BenchmarkVariableName/ValidStrict-6     	 1000000	      1087 ns/op	     128 B/op	       5 allocs/op
+BenchmarkVariableName/Invalid-6         	41859518	        27.37 ns/op	       1 B/op	       1 allocs/op
+BenchmarkEmail/Valid-6                  	 1529440	       781.7 ns/op	      32 B/op	       1 allocs/op
+BenchmarkEmail/ValidComplex-6           	 1582082	       761.6 ns/op	      32 B/op	       1 allocs/op
+BenchmarkEmail/Invalid-6                	33812802	        35.14 ns/op	      16 B/op	       1 allocs/op
+BenchmarkEmail/InvalidFormat-6          	587890792	         2.019 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLatitude/ValidPositive-6       	11015227	       107.7 ns/op	      16 B/op	       2 allocs/op
+BenchmarkLatitude/ValidNegative-6       	10721606	       115.6 ns/op	      16 B/op	       2 allocs/op
+BenchmarkLatitude/Invalid-6             	10836784	       112.4 ns/op	      16 B/op	       2 allocs/op
+BenchmarkLongitude/ValidPositive-6      	10270970	       114.0 ns/op	      16 B/op	       2 allocs/op
+BenchmarkLongitude/ValidNegative-6      	10189796	       116.0 ns/op	      16 B/op	       2 allocs/op
+BenchmarkLongitude/Invalid-6            	10541376	       112.1 ns/op	      16 B/op	       2 allocs/op
+BenchmarkMD5/Valid-6                    	 2706142	       447.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMD5/Invalid-6                  	605684750	         1.992 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIPv4/Valid-6                   	13901445	        85.26 ns/op	      64 B/op	       1 allocs/op
+BenchmarkIPv4/ValidLocalhost-6          	14410293	        88.03 ns/op	      64 B/op	       1 allocs/op
+BenchmarkIPv4/Invalid-6                 	16114604	        71.90 ns/op	      64 B/op	       1 allocs/op
+BenchmarkIPv6/Valid-6                   	14128792	        84.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIPv6/ValidShort-6              	38995820	        30.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIPv6/Invalid-6                 	22866658	        44.15 ns/op	      48 B/op	       1 allocs/op
+BenchmarkEven/ValidEven-6               	 9735872	       128.2 ns/op	     128 B/op	       4 allocs/op
+BenchmarkEven/InvalidOdd-6              	 9487488	       129.3 ns/op	     128 B/op	       4 allocs/op
+BenchmarkOdd/ValidOdd-6                 	10003414	       119.7 ns/op	     128 B/op	       4 allocs/op
+BenchmarkOdd/InvalidEven-6              	 9941060	       122.0 ns/op	     128 B/op	       4 allocs/op
+BenchmarkE164/Valid-6                   	 7082565	       167.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkE164/Invalid-6                 	41346447	        28.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkE164/InvalidFormat-6           	14475134	        81.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPhone/Valid-6                  	 2910463	       410.5 ns/op	      24 B/op	       2 allocs/op
+BenchmarkPhone/ValidWithSpaces-6        	 2837608	       430.8 ns/op	      24 B/op	       2 allocs/op
+BenchmarkPhone/Invalid-6                	 5392218	       223.1 ns/op	      24 B/op	       2 allocs/op
+BenchmarkDigit/Valid-6                  	139367886	         8.809 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDigit/Invalid-6                	124452582	         9.519 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNumeric/ValidInteger-6         	 9895348	       122.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNumeric/ValidDecimal-6         	 9229262	       127.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNumeric/ValidNegative-6        	 9266892	       130.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkNumeric/Invalid-6              	 8133463	       146.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAlpha/Valid-6                  	121680956	         9.931 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAlpha/Invalid-6                	163999609	         7.345 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAlnum/Valid-6                  	89381952	        13.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAlnum/Invalid-6                	80839196	        14.77 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/goloop/is	75.415s
