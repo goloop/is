@@ -480,6 +480,61 @@ func TestIBANCountry(t *testing.T) {
 	}
 }
 
+// TestIPv6Zone checks that a zoned address is rejected while ordinary and
+// IPv4-mapped IPv6 addresses are accepted.
+func TestIPv6Zone(t *testing.T) {
+	if IPv6("fe80::1%eth0") {
+		t.Error("IPv6 accepted a zoned address")
+	}
+	good := []string{"::1", "2001:db8::1", "::ffff:1.2.3.4"}
+	for _, s := range good {
+		if !IPv6(s) {
+			t.Errorf("IPv6(%q) = false; want true", s)
+		}
+	}
+	// A zoned address must not count as an IP at all.
+	if IP("fe80::1%eth0") {
+		t.Error("IP accepted a zoned IPv6 address")
+	}
+}
+
+// TestPhoneLength checks the E.164 upper bound and that separators do not
+// inflate the digit count.
+func TestPhoneLength(t *testing.T) {
+	if !Phone("+123456789012345") { // exactly 15 digits
+		t.Error("Phone rejected a 15-digit number")
+	}
+	if Phone("+1234567890123456") { // 16 digits
+		t.Error("Phone accepted a 16-digit number")
+	}
+	if !Phone("+1-23-456-789-012-345") { // 15 digits with separators
+		t.Error("Phone rejected 15 digits split by separators")
+	}
+	if Phone("+") { // no digits
+		t.Error("Phone accepted a lone plus sign")
+	}
+}
+
+// TestInternalEdgeBranches exercises a few defensive branches that production
+// callers never reach (length guards are checked earlier), keeping behavior
+// pinned even if the call sites change.
+func TestInternalEdgeBranches(t *testing.T) {
+	// isASCIIDigits rejects the empty string.
+	if isASCIIDigits("") {
+		t.Error("isASCIIDigits(\"\") = true; want false")
+	}
+	// cardChecker: an input made only of separators cleans down to "".
+	if BankCard("---", Visa) || BankCard("   ") {
+		t.Error("BankCard accepted an all-separator input")
+	}
+	// parseCoordinate: a value that matches the decimal regex but overflows
+	// float64 must fail (ParseFloat returns ErrRange), not panic.
+	huge := strings.Repeat("9", 400)
+	if Latitude(huge) || Longitude(huge) {
+		t.Error("coordinate accepted an overflowing decimal string")
+	}
+}
+
 // TestNickRejectsWhitespace pins the no-cleaning contract for Nickname.
 func TestNickRejectsWhitespace(t *testing.T) {
 	for _, s := range []string{" user", "user ", "us er", "\tuser", "user\n"} {

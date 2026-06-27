@@ -11,8 +11,10 @@ var (
 	// The e164Regex is regular expression for E.164.
 	e164Regex = regexp.MustCompile(`^\+\d{1,15}$`)
 
-	// The phoneRegex regular expression for phone number.
-	phoneRegex = regexp.MustCompile(`^\+[\d]+$`)
+	// The phoneRegex matches a '+' followed by 1 to 15 digits, the maximum
+	// length of an international number under E.164, applied after the
+	// grouping separators have been removed.
+	phoneRegex = regexp.MustCompile(`^\+\d{1,15}$`)
 )
 
 // isASCIIDigits reports whether s is non-empty and consists solely of
@@ -158,8 +160,8 @@ func E164(v string) bool {
 // - Digits may be separated by spaces, hyphens, or dots.
 //
 // These common grouping separators are ignored before validation; once they
-// are removed, the remaining value must be a '+' followed by one or more
-// digits.
+// are removed, the remaining value must be a '+' followed by 1 to 15 digits
+// (the E.164 maximum).
 //
 // Example usage:
 //
@@ -167,6 +169,7 @@ func E164(v string) bool {
 //	is.Phone("+1-234-567-8900")     // Returns: true
 //	is.Phone("+380961234567")       // Returns: true
 //	is.Phone("123456789")           // Returns: false, no plus sign
+//	is.Phone("+1234567890123456")   // Returns: false, more than 15 digits
 //	is.Phone("")                    // Returns: false, empty string
 //
 // This function can be used to validate user input or data to ensure

@@ -54,7 +54,9 @@ func IPv4(ip string) bool {
 //
 // This function uses net/netip from the Go standard library to parse the
 // address and then checks that it is an IPv6 address (including IPv4-mapped
-// IPv6 addresses), which excludes plain dotted-decimal IPv4 input.
+// IPv6 addresses), which excludes plain dotted-decimal IPv4 input. A scoped
+// address carrying a zone identifier (for example "fe80::1%eth0") is
+// rejected: the zone is a routing scope, not part of the address itself.
 //
 // Example usage:
 //
@@ -79,7 +81,7 @@ func IPv4(ip string) bool {
 // it in network operations.
 func IPv6(ip string) bool {
 	addr, err := netip.ParseAddr(ip)
-	return err == nil && addr.Is6()
+	return err == nil && addr.Is6() && addr.Zone() == ""
 }
 
 // IP checks if the string is a valid representation of an IP address.

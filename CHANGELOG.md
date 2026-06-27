@@ -48,7 +48,10 @@ positives, and modernizes the implementation. Go 1.24+ is required.
 
 ### Changed
 - `Phone` now ignores hyphens and dots in addition to spaces and parentheses,
-  so grouped numbers like `+1-234-567-8900` validate.
+  so grouped numbers like `+1-234-567-8900` validate; it also caps the number
+  at 15 digits (the E.164 maximum).
+- `IPv6` rejects a scoped address carrying a zone identifier
+  (e.g. `fe80::1%eth0`).
 - `Email` rejects consecutive `.`/`-` separators within a label
   (e.g. `a..b@example.com`).
 - `Title`'s word-boundary behavior (any non-letter, including apostrophe and
