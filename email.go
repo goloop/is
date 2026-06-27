@@ -44,12 +44,13 @@ func Email(email string) bool {
 		return false
 	}
 
-	// Split the email into local and domain parts.
-	parts := strings.Split(email, "@")
-	if len(parts) != 2 {
-		return false
+	// Split the email into local and domain parts on the single '@'.
+	// Using IndexByte (instead of strings.Split) keeps this allocation-free.
+	at := strings.IndexByte(email, '@')
+	if at < 0 || strings.IndexByte(email[at+1:], '@') >= 0 {
+		return false // no '@', or more than one
 	}
-	local, domain := parts[0], parts[1]
+	local, domain := email[:at], email[at+1:]
 
 	// Check the length of the local part.
 	if len(local) > 64 || len(local) < 1 {
