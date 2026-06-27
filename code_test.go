@@ -297,14 +297,14 @@ func TestVariableNameFor(t *testing.T) {
 			v:        "myVar",
 			language: "unknown",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("unknown"),
+			wantErr:  unsupportedLanguageError("unknown"),
 		},
 		{
 			name:     "Invalid - Empty Language",
 			v:        "myVar",
 			language: "",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported(""),
+			wantErr:  unsupportedLanguageError(""),
 		},
 		{
 			name:     "Valid - PHP variable with $",
@@ -916,7 +916,7 @@ func TestLanguageSpecificCases(t *testing.T) {
 			v:        "myVar",
 			language: "unknown",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("unknown"),
+			wantErr:  unsupportedLanguageError("unknown"),
 		},
 
 		// Aliases
@@ -1736,14 +1736,14 @@ func TestDefaultLanguageConfig(t *testing.T) {
 			v:        "myVar",
 			language: "nonexistent",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("nonexistent"),
+			wantErr:  unsupportedLanguageError("nonexistent"),
 		},
 		{
 			name:     "Non-existent language - invalid start",
 			v:        "1var",
 			language: "nonexistent",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("nonexistent"),
+			wantErr:  unsupportedLanguageError("nonexistent"),
 		},
 		{
 			name:     "Non-existent language - empty string",
@@ -1757,28 +1757,28 @@ func TestDefaultLanguageConfig(t *testing.T) {
 			v:        "var@name",
 			language: "nonexistent",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("nonexistent"),
+			wantErr:  unsupportedLanguageError("nonexistent"),
 		},
 		{
 			name:     "Non-existent language - unicode",
 			v:        "변수",
 			language: "nonexistent",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("nonexistent"),
+			wantErr:  unsupportedLanguageError("nonexistent"),
 		},
 		{
 			name:     "Empty language name",
 			v:        "myVar",
 			language: "",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported(""),
+			wantErr:  unsupportedLanguageError(""),
 		},
 		{
 			name:     "Whitespace language name",
 			v:        "myVar",
 			language: "   ",
 			want:     false,
-			wantErr:  ErrLanguageNotSupported("   "),
+			wantErr:  unsupportedLanguageError("   "),
 		},
 	}
 
@@ -2090,11 +2090,11 @@ func TestVariableNameFor_DefaultConfig(t *testing.T) {
 	}{
 		{
 			"Default config - valid identifier", "myVar", "unknown",
-			false, ErrLanguageNotSupported("unknown"),
+			false, unsupportedLanguageError("unknown"),
 		},
 		{
 			"Default config - invalid identifier", "1var", "unknown",
-			false, ErrLanguageNotSupported("unknown"),
+			false, unsupportedLanguageError("unknown"),
 		},
 	}
 

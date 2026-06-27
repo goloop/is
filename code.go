@@ -1,9 +1,11 @@
 package is
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/goloop/g"
@@ -17,13 +19,23 @@ var (
 	// selectorRegex is the regular expression for a valid CSS
 	// selector in non-strict mode.
 	selectorRegex = regexp.MustCompile(`^(#|\.)?[a-zA-Z_-][a-zA-Z\d_-]*$`)
-
-	// ErrLanguageNotSupported indicates that the specified
-	// programming language is not supported.
-	ErrLanguageNotSupported = func(lang string) error {
-		return fmt.Errorf("programming language '%s' is not supported", lang)
-	}
 )
+
+// ErrLanguageNotSupported is returned by VariableNameFor and VarFor when the
+// requested programming language is not known. It is a sentinel error: test
+// for it with errors.Is rather than by string comparison.
+//
+//	if _, err := is.VariableNameFor(name, lang); errors.Is(
+//		err, is.ErrLanguageNotSupported) {
+//		// the language is not supported
+//	}
+var ErrLanguageNotSupported = errors.New("programming language is not supported")
+
+// unsupportedLanguageError wraps ErrLanguageNotSupported with the offending
+// language name while keeping the sentinel matchable via errors.Is.
+func unsupportedLanguageError(lang string) error {
+	return fmt.Errorf("%w: %q", ErrLanguageNotSupported, lang)
+}
 
 // reservedWords contains reserved keywords for various programming languages.
 var reservedWords = map[string]map[string]struct{}{
@@ -315,23 +327,6 @@ var reservedWords = map[string]map[string]struct{}{
 		"vertical": {}, "visibility": {}, "visited": {}, "white": {},
 		"z-index": {}, "@font-feature-values": {}, "backdrop-filter": {},
 		"translate": {}, "width": {}, "empty": {}, "padding": {},
-	},
-
-	"markdown": {
-		"#": {}, "##": {}, "###": {}, "####": {}, "#####": {}, "######": {},
-		"*": {}, "**": {}, "_": {}, "__": {}, "___": {},
-		"`": {}, "``": {}, "```": {}, "~~~~": {}, ">": {}, ">>": {},
-		"-": {}, "+": {}, "1.": {}, "[": {}, "]": {}, "(": {}, ")": {},
-		"{": {}, "}": {}, "!": {}, "|": {}, "\\": {}, "---": {},
-		"===": {}, "***": {}, "<!--": {}, "-->": {},
-	},
-
-	"regex": {
-		"^": {}, "$": {}, ".": {}, "*": {}, "+": {}, "?": {}, "|": {},
-		"\\": {}, "(": {}, ")": {}, "[": {}, "]": {}, "{": {}, "}": {},
-		"\\d": {}, "\\D": {}, "\\w": {}, "\\W": {}, "\\s": {}, "\\S": {},
-		"\\b": {}, "\\B": {}, "\\n": {}, "\\r": {}, "\\t": {}, "\\f": {},
-		"\\v": {}, "\\0": {}, "\\x": {}, "\\u": {}, "\\c": {}, "\\p": {},
 	},
 
 	"bash": {
@@ -817,6 +812,161 @@ var languageConfigs = map[string]languageConfig{
 			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
 		},
 	},
+
+	// The configs below cover the remaining languages that previously had
+	// reserved-word tables but no identifier rules. Without an entry here a
+	// call such as VariableNameFor("x", "csharp") dereferenced a nil
+	// checkFirst and panicked; every reserved-word language now has a config.
+
+	"csharp": {
+		language:      "csharp",
+		caseSensitive: true,
+		allowUnicode:  true,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"dart": {
+		language:      "dart",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_' || r == '$'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) ||
+				unicode.IsNumber(r) || r == '_' || r == '$'
+		},
+	},
+	"bash": {
+		language:      "bash",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"elixir": {
+		language:      "elixir",
+		caseSensitive: true,
+		allowUnicode:  true,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"erlang": {
+		language:      "erlang",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) ||
+				unicode.IsNumber(r) || r == '_' || r == '@'
+		},
+	},
+	"julia": {
+		language:      "julia",
+		caseSensitive: true,
+		allowUnicode:  true,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) ||
+				unicode.IsNumber(r) || r == '_' || r == '!'
+		},
+	},
+	"objectivec": {
+		language:      "objectivec",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_' || r == '$'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) ||
+				unicode.IsNumber(r) || r == '_' || r == '$'
+		},
+	},
+	"vbnet": {
+		language:      "vbnet",
+		caseSensitive: false,
+		allowUnicode:  true,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"fortran": {
+		language:      "fortran",
+		caseSensitive: false,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r)
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"cobol": {
+		language:      "cobol",
+		caseSensitive: false,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r)
+		},
+		validChars: func(r rune) bool {
+			// COBOL data names allow hyphens between alphanumerics.
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '-'
+		},
+	},
+	"prolog": {
+		language:      "prolog",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"eiffel": {
+		language:      "eiffel",
+		caseSensitive: false,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r)
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) || r == '_'
+		},
+	},
+	"assembly": {
+		language:      "assembly",
+		caseSensitive: true,
+		allowUnicode:  false,
+		checkFirst: func(r rune) bool {
+			return unicode.IsLetter(r) || r == '_' || r == '.' || r == '$'
+		},
+		validChars: func(r rune) bool {
+			return unicode.IsLetter(r) || unicode.IsNumber(r) ||
+				r == '_' || r == '.' || r == '$'
+		},
+	},
 }
 
 // isLanguageSupported checks if the language is supported.
@@ -830,16 +980,24 @@ func isLanguageSupported(language string) bool {
 	return exists
 }
 
+// allReservedWords returns the union of every language's reserved words. It
+// is computed once, on first use, so that isReservedInAnyLanguage performs an
+// O(1) lookup instead of scanning every language's table on each call.
+var allReservedWords = sync.OnceValue(func() map[string]struct{} {
+	set := make(map[string]struct{})
+	for _, langWords := range reservedWords {
+		for word := range langWords {
+			set[word] = struct{}{}
+		}
+	}
+	return set
+})
+
 // isReservedInAnyLanguage checks if the given word is reserved
 // in any programming language.
 func isReservedInAnyLanguage(word string) bool {
-	for _, langWords := range reservedWords {
-		if _, reserved := langWords[word]; reserved {
-			return true
-		}
-	}
-
-	return false
+	_, reserved := allReservedWords()[word]
+	return reserved
 }
 
 // isValidIdentifier checks if the variable name conforms to the basic rules:
@@ -934,7 +1092,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 
 	// Empty language name is not valid.
 	if language == "" {
-		return false, ErrLanguageNotSupported(originalLanguage)
+		return false, unsupportedLanguageError(originalLanguage)
 	}
 
 	// Convert to lowercase for case-insensitive comparison.
@@ -945,11 +1103,17 @@ func VariableNameFor(v string, language string) (bool, error) {
 
 	// Check if language is supported.
 	if !isLanguageSupported(language) {
-		return false, ErrLanguageNotSupported(originalLanguage)
+		return false, unsupportedLanguageError(originalLanguage)
 	}
 
-	// Get language config
-	config, _ := languageConfigs[language]
+	// Get the language config. Although every reserved-word language now
+	// ships an identifier config, this guard ensures a missing entry yields
+	// a clean error instead of a nil-function-call panic (the original
+	// BUG-06): config.checkFirst/validChars must never be nil here.
+	config, ok := languageConfigs[language]
+	if !ok {
+		return false, unsupportedLanguageError(originalLanguage)
+	}
 
 	if langWords, exists := reservedWords[language]; exists {
 		checkWord := v

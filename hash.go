@@ -15,8 +15,8 @@ var (
 	//    followed by '==', or 3 valid Base64 characters followed by '=',
 	//    or 4 valid Base64 characters.
 	base64Regex = regexp.MustCompile(
-		`^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|` +
-			`[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{4})$`,
+		`^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|` +
+			`[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$`,
 	)
 
 	// The base64URLRegex is a regex pattern used to validate
@@ -28,10 +28,6 @@ var (
 	//    followed by '==', or 3 valid URL-safe Base64 characters followed by
 	//    '=', or 4 valid URL-safe Base64 characters.
 	//
-	// Note: all base64URL strings:
-	//  `^(?:[A-Za-z0-9_-]{4})*((?:[A-Za-z0-9_-]{2,4})|` +
-	//  `(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|` +
-	//  `[A-Za-z0-9+\\/]{4}))$`
 	base64URLRegex = regexp.MustCompile(
 		`^([A-Za-z0-9_-]{4})*([A-Za-z0-9_-]{2}(==)?|[A-Za-z0-9_-]{3}=?)?$`,
 	)
@@ -51,6 +47,21 @@ var (
 		`^(rgb|RGB)\(\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\s*,` +
 			`\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\s*,` +
 			`\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\s*\)$`,
+	)
+
+	// Fixed-length lowercase/uppercase hex patterns for cryptographic
+	// hash digests. Unlike hexRegex, these intentionally forbid the '0x'
+	// and '#' prefixes: a real digest is exactly N hex nibbles, nothing
+	// more. The length alone is the discriminator between algorithms.
+	md5Regex    = regexp.MustCompile(`^[0-9a-fA-F]{32}$`)  // 128-bit
+	sha1Regex   = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)  // 160-bit
+	sha256Regex = regexp.MustCompile(`^[0-9a-fA-F]{64}$`)  // 256-bit
+	sha512Regex = regexp.MustCompile(`^[0-9a-fA-F]{128}$`) // 512-bit
+
+	// uuidRegex matches the canonical 8-4-4-4-12 hexadecimal UUID form.
+	uuidRegex = regexp.MustCompile(
+		`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-` +
+			`[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`,
 	)
 )
 
@@ -281,13 +292,70 @@ func JWT(v string) bool {
 // 1. The input string should consist of exactly 32 characters.
 // 2. Each character should be a valid hexadecimal digit (0-9, a-f, A-F).
 //
+// Unlike Hex, this function rejects the '0x' and '#' prefixes: a real MD5
+// digest is exactly 32 hexadecimal nibbles with no decoration.
+//
 // If the input string passes these checks, the function returns true,
 // indicating that the string is a valid MD5 hash. Otherwise, it returns false.
 //
 // Example usage:
 //
-//	is.MD5("d41d8cd98f00b204e9800998ecf8427e") // Returns: true
-//	is.MD5("notamd5hash") // Returns: false
+//	is.MD5("d41d8cd98f00b204e9800998ecf8427e")   // Returns: true
+//	is.MD5("0xd41d8cd98f00b204e9800998ecf842")   // Returns: false
+//	is.MD5("notamd5hash")                         // Returns: false
 func MD5(v string) bool {
-	return len(v) == 32 && Hex(v)
+	return md5Regex.MatchString(v)
+}
+
+// SHA1 checks if the given string is a valid SHA-1 hash: exactly 40
+// hexadecimal digits (0-9, a-f, A-F) with no '0x'/'#' prefix. It validates
+// the format only, not the cryptographic provenance of the value.
+//
+// Example usage:
+//
+//	is.SHA1("da39a3ee5e6b4b0d3255bfef95601890afd80709") // Returns: true
+//	is.SHA1("da39a3ee")                                  // Returns: false
+func SHA1(v string) bool {
+	return sha1Regex.MatchString(v)
+}
+
+// SHA256 checks if the given string is a valid SHA-256 hash: exactly 64
+// hexadecimal digits (0-9, a-f, A-F) with no '0x'/'#' prefix. It validates
+// the format only, not the cryptographic provenance of the value.
+//
+// Example usage:
+//
+//	is.SHA256("e3b0c44298fc1c149afbf4c8996fb924" +
+//		"27ae41e4649b934ca495991b7852b855") // Returns: true
+func SHA256(v string) bool {
+	return sha256Regex.MatchString(v)
+}
+
+// SHA512 checks if the given string is a valid SHA-512 hash: exactly 128
+// hexadecimal digits (0-9, a-f, A-F) with no '0x'/'#' prefix. It validates
+// the format only, not the cryptographic provenance of the value.
+//
+// Example usage:
+//
+//	is.SHA512(strings.Repeat("0", 128)) // Returns: true
+func SHA512(v string) bool {
+	return sha512Regex.MatchString(v)
+}
+
+// UUID checks if the given string is a valid UUID in the canonical
+// 8-4-4-4-12 hexadecimal form (36 characters with hyphens), for example
+// "550e8400-e29b-41d4-a716-446655440000".
+//
+// It validates the textual format only and accepts any version/variant; it
+// does not require the version or variant nibbles to take particular values,
+// and it does not accept braces, URN prefixes, or the unhyphenated form.
+//
+// Example usage:
+//
+//	is.UUID("550e8400-e29b-41d4-a716-446655440000") // Returns: true
+//	is.UUID("550E8400-E29B-41D4-A716-446655440000") // Returns: true
+//	is.UUID("550e8400e29b41d4a716446655440000")     // Returns: false
+//	is.UUID("not-a-uuid")                            // Returns: false
+func UUID(v string) bool {
+	return uuidRegex.MatchString(v)
 }

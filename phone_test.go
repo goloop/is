@@ -204,6 +204,16 @@ func TestPhone(t *testing.T) {
 			want:     true,
 		},
 		{
+			name:     "Valid phone number with hyphens",
+			phoneNum: "+1-234-567-8900",
+			want:     true,
+		},
+		{
+			name:     "Valid phone number with dots",
+			phoneNum: "+1.234.567.8900",
+			want:     true,
+		},
+		{
 			name:     "Invalid phone number - no plus sign",
 			phoneNum: "123456789",
 			want:     false,

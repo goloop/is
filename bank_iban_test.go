@@ -1,49 +1,10 @@
 package is
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/goloop/g"
 )
-
-// TestMapLetterToNumber tests the mapLetterToNumber function.
-func TestMapLetterToNumber(t *testing.T) {
-	tests := []struct {
-		name string
-		in   rune
-		want int
-	}{
-		{
-			name: "Maps letter A to 10",
-			in:   'A',
-			want: 10,
-		},
-		{
-			name: "Maps letter B to 11",
-			in:   'B',
-			want: 11,
-		},
-		{
-			name: "Maps letter Z to 35",
-			in:   'Z',
-			want: 35,
-		},
-		{
-			name: "Maps undefined letter to 0",
-			in:   '!',
-			want: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mapLetterToNumber(tt.in); got != tt.want {
-				t.Errorf("mapLetterToNumber() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 // TestIBAN tests the IBAN function.
 // Tests the IBAN function for large coverage, including strict mode.
@@ -209,130 +170,123 @@ func TestIBAN(t *testing.T) {
 }
 
 // TestCalculateIBANChecksum tests the CalculateIBANChecksum function.
+// The function returns the ISO 7064 MOD-97-10 check value as an int, or -1
+// when the input contains a character outside [0-9A-Z]. An empty string has
+// no characters to fold, so its check value is 0.
 func TestCalculateIBANChecksum(t *testing.T) {
 	tests := []struct {
 		name string
 		iban string
-		want *big.Int
+		want int
 	}{
 		{
 			name: "Valid IBAN with only numbers",
 			iban: "123456789",
-			want: new(big.Int).Mod(big.NewInt(123456789), big.NewInt(97)),
+			want: 123456789 % 97,
 		},
 		{
 			name: "Valid IBAN with letters",
 			iban: "GB82WEST12345698765432",
-			want: new(big.Int).SetInt64(85), // actual calculated checksum
+			want: 85, // actual calculated checksum
 		},
 		{
 			name: "Valid IBAN mixed case",
 			iban: "GB82west12345698765432",
-			want: big.NewInt(-1), // invalid chars (lowercase)
+			want: -1, // invalid chars (lowercase)
 		},
 
 		// Test letters to numbers conversion.
 		{
 			name: "IBAN with single letters A-Z",
 			iban: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-			want: new(big.Int).SetInt64(80), // actual calculated checksum
+			want: 80, // actual calculated checksum
 		},
 
 		// Test invalid characters.
 		{
 			name: "IBAN with space",
 			iban: "GB82 WEST",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 		{
 			name: "IBAN with special character",
 			iban: "GB82@WEST",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 		{
 			name: "IBAN with hyphen",
 			iban: "GB82-WEST",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 		{
 			name: "IBAN with lowercase special chars",
 			iban: "gb82#west",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 
 		// Edge cases.
 		{
 			name: "Empty IBAN",
 			iban: "",
-			want: big.NewInt(-1), // invalid IBAN
+			want: 0, // nothing to fold
 		},
 		{
 			name: "Single digit",
 			iban: "1",
-			want: new(big.Int).SetInt64(1),
+			want: 1,
 		},
 		{
 			name: "Single letter",
 			iban: "A",
-			want: new(big.Int).SetInt64(10),
+			want: 10,
 		},
 
 		// Test boundary cases.
 		{
 			name: "Number at lower boundary",
 			iban: "0",
-			want: new(big.Int).SetInt64(0),
+			want: 0,
 		},
 		{
 			name: "Number at upper boundary",
 			iban: "9",
-			want: new(big.Int).SetInt64(9),
-		},
-		{
-			name: "Letter at lower boundary",
-			iban: "A",
-			want: new(big.Int).SetInt64(10),
+			want: 9,
 		},
 		{
 			name: "Letter at upper boundary",
 			iban: "Z",
-			want: new(big.Int).SetInt64(35),
+			want: 35,
 		},
 
 		// Test combinations.
 		{
 			name: "Mixed letters and numbers",
 			iban: "A1B2C3",
-			want: new(big.Int).SetInt64(2), // actual calculated checksum
+			want: 2, // actual calculated checksum
 		},
 		{
 			name: "All invalid characters",
 			iban: "@#$%",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 		{
 			name: "Mix of valid and invalid",
 			iban: "AB12@CD34",
-			want: big.NewInt(-1),
+			want: -1,
 		},
 
 		// Real IBAN examples.
 		{
-			name: "Valid GB IBAN",
-			iban: "GB82WEST12345698765432",
-			want: new(big.Int).SetInt64(85), // actual calculated checksum
-		},
-		{
 			name: "Valid DE IBAN",
 			iban: "DE89370400440532013000",
-			want: new(big.Int).SetInt64(69), // actual calculated checksum
+			want: 69, // actual calculated checksum
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := CalculateIBANChecksum(tt.iban)
-			if got.Cmp(tt.want) != 0 {
+			if got != tt.want {
 				t.Errorf("CalculateIBANChecksum(%q) = %v, want %v",
 					tt.iban, got, tt.want)
 			}

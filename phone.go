@@ -1,7 +1,6 @@
 package is
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -9,12 +8,28 @@ import (
 )
 
 var (
-	// The e16Regex is regular expression for E.164.
+	// The e164Regex is regular expression for E.164.
 	e164Regex = regexp.MustCompile(`^\+\d{1,15}$`)
 
 	// The phoneRegex regular expression for phone number.
 	phoneRegex = regexp.MustCompile(`^\+[\d]+$`)
 )
+
+// isASCIIDigits reports whether s is non-empty and consists solely of
+// ASCII digits '0'..'9'. Unlike strconv.Atoi it rejects a leading '+'/'-'
+// sign and underscores, which is exactly what identifier formats (IMSI,
+// IMEI) require.
+func isASCIIDigits(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
 
 // IMSI checks if the given value is a valid International Mobile Subscriber
 // Identity (IMSI). The IMSI is a unique identifier associated with a mobile
@@ -22,11 +37,10 @@ var (
 // MNC (Mobile Network Code), and MSIN (Mobile Subscriber Identification
 // Number).
 //
-// This function validates the IMSI by performing the following checks:
-// 1. The length of the IMSI should be 15 digits.
-// 2. The first three digits (MCC) should be a valid MCC.
-// 3. The following two or three digits (MNC) should be a valid MNC.
-// 4. The remaining digits (MSIN) should be numeric.
+// This function validates the IMSI structurally: it must be exactly 15
+// ASCII digits (0-9). The MCC, MNC, and MSIN segments are positional, but
+// only their digit-ness is checked here, not their assignment to a real
+// operator. A sign, space, or any non-digit makes the value invalid.
 //
 // Example usage:
 //
@@ -34,33 +48,11 @@ var (
 //	is.IMSI("460001234567890")  // Returns: true
 //	is.IMSI("1234567890123456") // Returns: false, length exceeds 15 digits
 //	is.IMSI("310150abc123456")  // Returns: false, invalid characters in MSIN
+//	is.IMSI("+10150123456789")  // Returns: false, sign is not a digit
 func IMSI(imsi string) bool {
-	// Check the length of the IMSI.
-	if len(imsi) != 15 {
-		return false
-	}
-
-	// Check the first three digits (MCC).
-	mccStr := imsi[:3]
-	_, err := strconv.Atoi(mccStr)
-	if err != nil {
-		return false
-	}
-
-	// Check the next two or three digits (MNC).
-	mncStr := imsi[3:5]
-	_, err = strconv.Atoi(mncStr)
-	if err != nil {
-		return false
-	}
-
-	// Check the remaining digits (MSIN).
-	msinStr := imsi[5:]
-	if _, err := strconv.Atoi(msinStr); err != nil {
-		return false
-	}
-
-	return true
+	// An IMSI is exactly 15 ASCII digits — no sign, no separators.
+	// A single pass rejects everything else and allocates nothing.
+	return len(imsi) == 15 && isASCIIDigits(imsi)
 }
 
 // IMEI validates whether a given string is a valid International Mobile
@@ -95,14 +87,23 @@ func IMSI(imsi string) bool {
 // It is a 15-digit number used for tracking and identifying the device.
 // The last digit is a check digit, computed according to the Luhn algorithm.
 func IMEI[T string | int64](imei T) bool {
-	v := fmt.Sprint(imei)
-	if len(v) != 15 {
+	var v string
+	switch x := any(imei).(type) {
+	case string:
+		v = x
+	case int64:
+		v = strconv.FormatInt(x, 10)
+	}
+
+	// An IMEI is exactly 15 ASCII digits. The explicit digit check also
+	// rejects a leading '-' from a negative int64 (FormatInt would keep it).
+	if len(v) != 15 || !isASCIIDigits(v) {
 		return false
 	}
 
 	sum := 0
 	for i := 0; i < len(v); i++ {
-		digit, _ := strconv.Atoi(string(v[i]))
+		digit := int(v[i] - '0')
 
 		// If the digit is in an even-indexed position (where the
 		// first position is 1), double its value.
@@ -154,11 +155,16 @@ func E164(v string) bool {
 // The phone number can have the following format:
 // - It starts with a plus sign (+) followed by the country code.
 // - The country code can be enclosed in parentheses.
-// - The phone number can contain spaces between digits.
+// - Digits may be separated by spaces, hyphens, or dots.
+//
+// These common grouping separators are ignored before validation; once they
+// are removed, the remaining value must be a '+' followed by one or more
+// digits.
 //
 // Example usage:
 //
 //	is.Phone("+380 (96) 00 00 000") // Returns: true
+//	is.Phone("+1-234-567-8900")     // Returns: true
 //	is.Phone("+380961234567")       // Returns: true
 //	is.Phone("123456789")           // Returns: false, no plus sign
 //	is.Phone("")                    // Returns: false, empty string
@@ -166,5 +172,5 @@ func E164(v string) bool {
 // This function can be used to validate user input or data to ensure
 // it follows the specified format for phone numbers.
 func Phone(phone string) bool {
-	return phoneRegex.MatchString(g.Weed(phone, " ()"))
+	return phoneRegex.MatchString(g.Weed(phone, " ()-."))
 }

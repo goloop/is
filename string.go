@@ -5,168 +5,17 @@ import (
 	"unicode"
 )
 
-// The numbers is a map of all Unicode code points that
-// are classified as "Numbers".
-var numbers = map[rune]struct{}{
-	// Arabic numerals.
-	'0': {}, '1': {}, '2': {}, '3': {}, '4': {},
-	'5': {}, '6': {}, '7': {}, '8': {}, '9': {},
-
-	// Fullwidth Arabic numerals.
-	'０': {}, '１': {}, '２': {}, '３': {}, '４': {},
-	'５': {}, '６': {}, '７': {}, '８': {}, '９': {},
-
-	// Arabic-Indic numerals.
-	'٠': {}, '١': {}, '٢': {}, '٣': {}, '٤': {},
-	'٥': {}, '٦': {}, '٧': {}, '٨': {}, '٩': {},
-
-	// Extended Arabic-Indic numerals.
-	// Persian numerals.
-	'۰': {}, '۱': {}, '۲': {}, '۳': {}, '۴': {},
-	'۵': {}, '۶': {}, '۷': {}, '۸': {}, '۹': {},
-
-	// Devanagari numerals.
-	'०': {}, '१': {}, '२': {}, '३': {}, '४': {},
-	'५': {}, '६': {}, '७': {}, '८': {}, '९': {},
-
-	// Bengali numerals.
-	'০': {}, '১': {}, '২': {}, '৩': {}, '৪': {},
-	'৫': {}, '৬': {}, '৭': {}, '৮': {}, '৯': {},
-
-	// Chinese numerals.
-	'零': {}, '一': {}, '二': {}, '三': {}, '四': {},
-	'五': {}, '六': {}, '七': {}, '八': {}, '九': {},
-	'十': {}, '廿': {}, '卅': {}, '卌': {}, '百': {},
-	'千': {}, '万': {}, '億': {}, '兆': {}, '京': {},
-	'雲': {}, '穣': {}, '拾': {}, '佰': {}, '仟': {},
-	'萬': {}, '垓': {}, '秭': {}, '穰': {},
-
-	// Japanese numerals.
-	'〇': {}, '壱': {}, '弐': {}, '参': {},
-
-	// Korean numerals.
-	'영': {}, '일': {}, '이': {}, '삼': {}, '사': {},
-	'오': {}, '육': {}, '칠': {}, '팔': {}, '구': {},
-	'십': {}, '백': {}, '천': {}, '만': {},
-	'억': {}, '조': {},
-
-	// Gujarati numerals.
-	'૦': {}, '૧': {}, '૨': {}, '૩': {}, '૪': {},
-	'૫': {}, '૬': {}, '૭': {}, '૮': {}, '૯': {},
-
-	// Punjabi (Gurmukhi) numerals.
-	'੦': {}, '੧': {}, '੨': {}, '੩': {}, '੪': {},
-	'੫': {}, '੬': {}, '੭': {}, '੮': {}, '੯': {},
-
-	// Tamil numerals.
-	'௦': {}, '௧': {}, '௨': {}, '௩': {}, '௪': {},
-	'௫': {}, '௬': {}, '௭': {}, '௮': {}, '௯': {},
-
-	// Telugu numerals.
-	'౦': {}, '౧': {}, '౨': {}, '౩': {}, '౪': {},
-	'౫': {}, '౬': {}, '౭': {}, '౮': {}, '౯': {},
-
-	// Kannada numerals.
-	'೦': {}, '೧': {}, '೨': {}, '೩': {}, '೪': {},
-	'೫': {}, '೬': {}, '೭': {}, '೮': {}, '೯': {},
-
-	// Malayalam numerals.
-	'൦': {}, '൧': {}, '൨': {}, '൩': {}, '൪': {},
-	'൫': {}, '൬': {}, '൭': {}, '൮': {}, '൯': {},
-
-	// Thai numerals.
-	'๐': {}, '๑': {}, '๒': {}, '๓': {}, '๔': {},
-	'๕': {}, '๖': {}, '๗': {}, '๘': {}, '๙': {},
-
-	// Lao numerals.
-	'໐': {}, '໑': {}, '໒': {}, '໓': {}, '໔': {},
-	'໕': {}, '໖': {}, '໗': {}, '໘': {}, '໙': {},
-
-	// Tibetan numerals.
-	'༠': {}, '༡': {}, '༢': {}, '༣': {}, '༤': {},
-	'༥': {}, '༦': {}, '༧': {}, '༨': {}, '༩': {},
-
-	// Myanmar (Burmese) numerals.
-	'၀': {}, '၁': {}, '၂': {}, '၃': {}, '၄': {},
-	'၅': {}, '၆': {}, '၇': {}, '၈': {}, '၉': {},
-
-	// Khmer numerals.
-	'០': {}, '១': {}, '២': {}, '៣': {}, '៤': {},
-	'៥': {}, '៦': {}, '៧': {}, '៨': {}, '៩': {},
-
-	// Hebrew numerals.
-	'א': {}, 'ב': {}, 'ג': {}, 'ד': {},
-	'ה': {}, 'ו': {}, 'ז': {}, 'ח': {}, 'ט': {},
-	'י': {}, 'כ': {}, 'ל': {}, 'מ': {},
-	'נ': {}, 'ס': {}, 'ע': {}, 'פ': {}, 'צ': {},
-	'ק': {}, 'ר': {}, 'ש': {}, 'ת': {},
-	'ך': {}, 'ם': {}, 'ן': {}, 'ף': {}, 'ץ': {},
-
-	// Balinese numerals.
-	'᭐': {}, '᭑': {}, '᭒': {}, '᭓': {}, '᭔': {},
-	'᭕': {}, '᭖': {}, '᭗': {}, '᭘': {}, '᭙': {},
-
-	// Limbu numerals.
-	'᥆': {}, '᥇': {}, '᥈': {}, '᥉': {}, '᥊': {},
-	'᥋': {}, '᥌': {}, '᥍': {}, '᥎': {}, '᥏': {},
-
-	// Osmanya numerals.
-	'𐒠': {}, '𐒡': {}, '𐒢': {}, '𐒣': {}, '𐒤': {},
-	'𐒥': {}, '𐒦': {}, '𐒧': {}, '𐒨': {}, '𐒩': {},
-
-	// Saurashtra numerals.
-	'꣠': {}, '꣡': {}, '꣢': {}, '꣣': {}, '꣤': {},
-	'꣥': {}, '꣦': {}, '꣧': {}, '꣨': {}, '꣩': {},
-
-	// Sundanese numerals.
-	'᮰': {}, '᮱': {}, '᮲': {}, '᮳': {}, '᮴': {},
-	'᮵': {}, '᮶': {}, '᮷': {}, '᮸': {}, '᮹': {},
-
-	// Javanese numerals.
-	'꧐': {}, '꧑': {}, '꧒': {}, '꧓': {}, '꧔': {},
-	'꧕': {}, '꧖': {}, '꧗': {}, '꧘': {}, '꧙': {},
-
-	// Old Persian numerals.
-	'𐏐': {}, '𐏑': {}, '𐏒': {}, '𐏓': {}, '𐏔': {},
-
-	// Armenian numerals.
-	'Ա': {}, 'Բ': {}, 'Գ': {}, 'Դ': {}, 'Ե': {}, 'Զ': {},
-	'Է': {}, 'Ը': {}, 'Թ': {}, 'Ժ': {}, 'Ի': {}, 'Լ': {},
-	'Խ': {}, 'Ծ': {}, 'Կ': {}, 'Հ': {}, 'Ձ': {}, 'Ղ': {},
-	'Ճ': {}, 'Մ': {}, 'Յ': {}, 'Ն': {}, 'Շ': {}, 'Ո': {},
-	'Չ': {}, 'Պ': {}, 'Ջ': {}, 'Ռ': {}, 'Ս': {}, 'Վ': {},
-	'Տ': {}, 'Ր': {}, 'Ց': {}, 'Ւ': {}, 'Փ': {}, 'Ք': {},
-
-	// Mongolian numerals.
-	'᠑': {}, '᠒': {}, '᠓': {}, '᠔': {}, '᠕': {}, '᠖': {},
-	'᠗': {}, '᠘': {}, '᠙': {}, '᠐': {}, 'ᠠ': {}, 'ᠡ': {},
-	'ᠢ': {}, 'ᠣ': {}, 'ᠤ': {}, 'ᠥ': {},
-
-	// Brahmi numerals.
-	'𑁒': {}, '𑁓': {}, '𑁔': {}, '𑁕': {}, '𑁖': {}, '𑁗': {}, '𑁘': {},
-	'𑁙': {}, '𑁚': {}, '𑁛': {}, '𑁜': {}, '𑁝': {}, '𑁞': {}, '𑁟': {},
-	'𑁠': {}, '𑁡': {}, '𑁢': {}, '𑁣': {}, '𑁤': {}, '𑁥': {},
-
-	// Ancient Greek numerals.
-	'Α': {}, 'Β': {}, 'Γ': {}, 'Δ': {}, 'Ε': {}, 'Ϛ': {}, 'Ζ': {},
-	'Η': {}, 'Θ': {}, 'Ι': {}, 'Κ': {}, 'Λ': {}, 'Μ': {}, 'Ν': {},
-	'Ξ': {}, 'Ο': {}, 'Π': {}, 'Ϟ': {}, 'Ϡ': {}, 'ϡ': {}, 'Ϣ': {},
-	'ϣ': {}, 'Ϥ': {}, 'ϥ': {}, 'Ϧ': {}, 'ϧ': {}, 'Ϩ': {}, 'ϩ': {},
-	'Ϫ': {}, 'ϫ': {}, 'Ϭ': {}, 'ϭ': {}, 'Ϯ': {}, 'ϯ': {}, 'ϰ': {},
-	'ϱ': {}, 'ϲ': {}, 'ϳ': {}, 'ϴ': {}, 'ϵ': {}, '϶': {}, 'Ϸ': {},
-	'ϸ': {}, 'Ϻ': {}, 'ϻ': {},
-
-	// Coptic numerals.
-	'Ⲁ': {}, 'Ⲃ': {}, 'Ⲅ': {}, 'Ⲇ': {}, 'Ⲉ': {}, 'Ⲋ': {}, 'Ⲍ': {},
-	'Ⲏ': {}, 'Ⲑ': {}, 'Ⲓ': {}, 'Ⲕ': {}, 'Ⲗ': {}, 'Ⲙ': {}, 'Ⲛ': {},
-	'Ⲝ': {}, 'Ⲟ': {}, 'Ⲡ': {}, 'Ⲣ': {}, '⳰': {}, 'Ⳳ': {}, '⳴': {},
-	'⳶': {}, '⳼': {}, '⳾': {}, '⳿': {},
-
-	// Ethiopic numerals.
-	'፩': {}, '፪': {}, '፫': {}, '፬': {}, '፭': {}, '፮': {},
-	'፯': {}, '፰': {}, '፱': {}, '፲': {}, '፳': {}, '፴': {},
-	'፵': {}, '፶': {}, '፷': {}, '፸': {}, '፹': {}, '፺': {},
-	'፻': {}, '፼': {},
+// decimalSeparators holds the runes accepted by Numeric as the single
+// decimal/grouping mark between digits. Kept at package level so it is
+// allocated once, not on every Numeric call.
+var decimalSeparators = map[rune]struct{}{
+	'.': {}, // Dot
+	',': {}, // Comma
+	'·': {}, // Middle dot
+	'・': {}, // Japanese separator
+	'٫': {}, // Arabic decimal point
+	'،': {}, // Arabic comma
+	'۔': {}, // Urdu full stop
 }
 
 // Digit checks whether a string consists only of numbers.
@@ -194,48 +43,49 @@ func Digit(s string) bool {
 	return true
 }
 
-// Numeric checks whether a string consists only of numeric characters,
-// including digits, decimal separators, and an optional '+' or '-' sign at the beginning.
-// The function recognizes integers and floating-point numbers, as well as
-// digits from various numeral systems and scripts.
+// Numeric checks whether a string represents a number: an optional leading
+// '+' or '-' sign, decimal digits, and at most one decimal/grouping
+// separator. The digits may come from any writing system whose decimal
+// digits are classified as Unicode "Number, decimal digit" (category Nd) —
+// e.g. ASCII, Arabic-Indic, Devanagari, Thai — so localized input validates
+// out of the box.
 //
-// Returns true if all characters in the string are numeric, and false otherwise.
-// The function supports decimal separators from different cultures.
+// What it deliberately rejects:
+//   - letter-based numeral systems (Hebrew, Greek, Armenian, Coptic, …),
+//     whose glyphs are letters, not digits, and would otherwise let ordinary
+//     words pass as "numbers";
+//   - ideographic and alphabetic numerals (CJK 一二三, Roman Ⅳ), which are
+//     not decimal digits;
+//   - a string with no digit at all (a lone separator or sign such as "."
+//     or "-").
+//
+// The function returns true only when every character is valid AND at least
+// one decimal digit is present.
 //
 // Example usage:
 //
 //	is.Numeric("1234")     // Output: true
 //	is.Numeric("3.14")     // Output: true
-//	is.Numeric("-456,789") // Output: true (if comma is considered a separator)
-//	is.Numeric("Ⅳ")       // Output: true
-//	is.Numeric("三・十四")  // Output: true
+//	is.Numeric("-456,789") // Output: true (comma as a separator)
+//	is.Numeric("٣.١٤")     // Output: true (Arabic-Indic digits)
+//	is.Numeric("Ⅳ")       // Output: false (Roman numeral, not a digit)
+//	is.Numeric("一二三")    // Output: false (CJK numerals, not digits)
 //	is.Numeric("1234abc")  // Output: false
-//	is.Numeric("1.2.3")    // Output: false (more than one decimal separator)
+//	is.Numeric("1.2.3")    // Output: false (more than one separator)
+//	is.Numeric(".")        // Output: false (no digit)
 func Numeric(s string) bool {
 	if len(s) == 0 {
 		return false
 	}
 
-	var (
-		hasDecimalSeparator bool
-		decimalSeparators   = map[rune]struct{}{
-			'.': {}, // Dot
-			',': {}, // Comma
-			'·': {}, // Middle dot
-			'・': {}, // Japanese separator
-			'٫': {}, // Arabic decimal point
-			'،': {}, // Arabic comma
-			'۔': {}, // Urdu decimal point
-		}
-	)
-
+	var hasDecimalSeparator, hasDigit bool
 	for i, r := range s {
-		// Check if the first character is a sign.
+		// A sign is allowed only as the very first character.
 		if i == 0 && (r == '+' || r == '-') {
 			continue
 		}
 
-		// Check if the character is a decimal separator.
+		// At most one decimal/grouping separator is allowed.
 		if _, isSeparator := decimalSeparators[r]; isSeparator {
 			if hasDecimalSeparator {
 				return false // more than one decimal separator
@@ -244,14 +94,15 @@ func Numeric(s string) bool {
 			continue
 		}
 
-		// Check if the character is a number.
-		if !unicode.IsDigit(r) && !unicode.Is(unicode.Number, r) {
-			if _, ok := numbers[r]; !ok {
-				return false
-			}
+		// Only true decimal digits (Unicode category Nd) count as numeric.
+		if !unicode.IsDigit(r) {
+			return false
 		}
+		hasDigit = true
 	}
-	return true
+
+	// A number must contain at least one digit: "." or "-" alone is not one.
+	return hasDigit
 }
 
 // Decimal returns true if all characters in the string are decimal digits
@@ -432,10 +283,16 @@ func Upper(s string) bool {
 	return true
 }
 
-// Title checks whether a string is a titlecased string.
+// Title checks whether a string is a titlecased string: every word starts
+// with an upper- (or title-) case letter and continues with lowercase
+// letters.
 //
-// In a titlecased string, upper- and title-case characters may only
-// follow uncased characters and lowercase characters only cased ones.
+// Word boundaries are any non-letter runes. This includes spaces and digits,
+// but also punctuation such as the hyphen and the apostrophe, so a name like
+// "O'Brien" is treated as the two words "O" and "Brien" (both titlecased,
+// hence valid), and "Mc-donald" splits into "Mc" and "donald" (the second is
+// lowercase, hence invalid). Pre-normalize the input if you need a different
+// word model.
 //
 // Example usage:
 //
@@ -443,6 +300,7 @@ func Upper(s string) bool {
 //	is.Title("Hello world")   // Output: false, 'world' starts with a lowercase
 //	is.Title("HELLO WORLD")   // Output: false, all letters are uppercase
 //	is.Title("hELLO wORLD")   // Output: false, words start with a lowercase
+//	is.Title("O'Brien")       // Output: true, "O" and "Brien" are separate
 func Title(s string) bool {
 	if len(s) == 0 {
 		return false

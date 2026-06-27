@@ -145,16 +145,25 @@ func TestNickname(t *testing.T) {
 			want:     false,
 		},
 		{
-			name:     "Valid Nickname - Trimmed Spaces",
+			// No-cleaning: surrounding spaces are NOT trimmed, so a
+			// padded nickname is rejected (it contains illegal spaces).
+			name:     "Surrounding spaces are not trimmed",
 			nickname: "   User123   ",
 			strict:   false,
-			want:     true,
+			want:     false,
 		},
 		{
-			name:     "Valid Nickname - Trimmed Spaces (Strict)",
+			name:     "Surrounding spaces are not trimmed (Strict)",
 			nickname: "   User123   ",
 			strict:   true,
-			want:     true,
+			want:     false,
+		},
+		{
+			// An interior space is likewise rejected.
+			name:     "Interior space rejected",
+			nickname: "User 123",
+			strict:   false,
+			want:     false,
 		},
 	}
 

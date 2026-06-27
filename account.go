@@ -2,7 +2,6 @@ package is
 
 import (
 	"regexp"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -28,6 +27,10 @@ var (
 // it only allows ASCII letters, numbers, and underscores, within the same
 // length constraints.
 //
+// Consistent with the package's no-cleaning principle, the input is validated
+// as-is: surrounding whitespace is NOT trimmed, so " user" is invalid. Trim
+// the input beforehand (e.g. with the companion 'g' package) if needed.
+//
 // Example usage:
 //
 //	nickname := "User123"
@@ -44,10 +47,8 @@ var (
 //	    fmt.Println("Invalid nickname in strict mode!")
 //	}
 func Nickname(nickname string, strict ...bool) bool {
-	// Trim spaces from the beginning and end of the nickname.
-	nickname = strings.TrimSpace(nickname)
-
-	// Check the length in characters (runes).
+	// Check the length in characters (runes). The input is validated as-is,
+	// without trimming, per the package's no-cleaning principle.
 	length := utf8.RuneCountInString(nickname)
 	if length < 1 || length > 15 {
 		return false

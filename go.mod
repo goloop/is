@@ -1,6 +1,6 @@
-module github.com/goloop/is
+module github.com/goloop/is/v2
 
-go 1.20
+go 1.24
 
 require github.com/goloop/g v1.15.0
 

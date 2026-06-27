@@ -6,8 +6,11 @@ import (
 )
 
 var (
-	// Regular expression pattern for a valid email slug (local/domain part).
-	slugPattern = `[\p{L}\p{N}]{1,}([\p{L}\p{N}.-]{1,}[\p{L}\p{N}]{1,})?`
+	// Regular expression pattern for a valid email slug (local/domain part):
+	// runs of letters/digits joined by single '.' or '-' separators. A slug
+	// starts and ends with a letter or digit and never contains two
+	// separators in a row, so "a..b" and "a--b" are rejected.
+	slugPattern = `[\p{L}\p{N}]+(?:[.-][\p{L}\p{N}]+)*`
 
 	// Compiled regex for the local part of the email.
 	localRegex = regexp.MustCompile(`^` + slugPattern + `$`)

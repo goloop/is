@@ -2,146 +2,226 @@ package is
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
-	"unicode"
 )
 
-var (
-	// The anyCreditCard is a regular expression for matching any credit card.
-	anyCreditCard = regexp.MustCompile(`^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11}|6[27][0-9]{14})$`)
-
-	// Visa is a regular expression for matching Visa bank card.
-	Visa = regexp.MustCompile(`^4[0-9]{12}(?:[0-9]{3})?$`)
-
-	// MasterCard is a regular expression for matching MasterCard bank card.
-	MasterCard = regexp.MustCompile(`^5[1-5][0-9]{14}$`)
-
-	// AmericanExpress is a regular expression for matching
-	// American Express bank card.
-	AmericanExpress = regexp.MustCompile(`^3[47][0-9]{13}$`)
-
-	// DiscoverCard is a regular expression for matching
-	// Discover Card bank card.
-	DiscoverCard = regexp.MustCompile(`^6(?:011\d{12}|5\d{14}|4[4-9]\d{13}|22(?:1(?:2[6-9]|[3-9]\d)|[2-8]\d{2}|9(?:[01]\d|2[0-5]))\d{10})$`)
-
-	// DCI is a regular expression for matching DCI bank card.
-	DCI = regexp.MustCompile(`^3(?:0[0-5]|[68][0-9])[0-9]{11}$`)
-
-	// UnionPay is a regular expression for matching UnionPay bank card.
-	UnionPay = regexp.MustCompile("^62[0-5]\\d{13,16}$")
-
-	// JCB is a regular expression for matching JCB bank card.
-	JCB = regexp.MustCompile(`^(?:2131|1800|35[0-9]{3})[0-9]{11}$`)
-
-	// Argencard is a regular expression for matching Argencard bank card.
-	Argencard = regexp.MustCompile(`^501105\d{10}$`)
-
-	// Cabal is a regular expression for matching Cabal bank card.
-	Cabal = regexp.MustCompile(`^6042(0[1-9]|10|1[1-9])\d{6}$`)
-
-	// Cencosud is a regular expression for matching Cencosud bank card.
-	Cencosud = regexp.MustCompile(`^603493\d{10}$`)
-
-	// ChinaUnionPay is a regular expression for matching
-	// China UnionPay bank card.
-	ChinaUnionPay = regexp.MustCompile(`^62[0-9]{14,17}$`)
-
-	// DinersClubCarteBlanche is a regular expression for matching
-	// Diners Club Carte Blanche bank card.
-	DinersClubCarteBlanche = regexp.MustCompile(`^30[0-5][0-9]{11}$`)
-
-	// DinersClubInternational is a regular expression for matching
-	// Diners Club International bank card.
-	DinersClubInternational = regexp.MustCompile(`^36[0-9]{12}$`)
-
-	// DinersClubUSAndCanada is a regular expression for matching
-	// Diners Club US & Canada bank card.
-	DinersClubUSAndCanada = regexp.MustCompile(`^5[45][0-9]{14}$`)
-
-	// DinersClub is a regular expression for matching Diners Club bank card.
-	DinersClub = regexp.MustCompile(`^3(?:0[0-5]|[68][0-9])[0-9]{11}$`)
-
-	// InstaPayment is a regular expression for matching
-	// InstaPayment bank card.
-	InstaPayment = regexp.MustCompile(`^63[7-9][0-9]{13}$`)
-
-	// Laser is a regular expression for matching Laser bank card.
-	Laser = regexp.MustCompile(`^(6304|670[69]|6771)[0-9]{12,15}$`)
-
-	// Maestro is a regular expression for matching Maestro bank card.
-	Maestro = regexp.MustCompile(`^(5018|5020|5038|6304|6759|676[1-3])[0-9]{8,15}$`)
-
-	// VisaElectron is a regular expression for matching
-	// Visa Electron bank card.
-	VisaElectron = regexp.MustCompile(`^(4026|417500|4508|4844|491[37])[0-9]{12}$`)
-
-	// Dankort is a regular expression for matching Dankort bank card.
-	Dankort = regexp.MustCompile(`^(5019)[0-9]{12}$`)
-
-	// RuPay is a regular expression for matching RuPay bank card.
-	RuPay = regexp.MustCompile(`^(508[5-9][0-9]{1}|60698|60699|607[0-8][0-9]{1}|6079[0-7]|60798[0-4]|608[0-4][0-9]{1}|608500)[0-9]{6,9}$`)
-
-	// InterPayment is a regular expression for matching
-	// InterPayment bank card.
-	InterPayment = regexp.MustCompile(`^636[0-9]{12,15}$`)
-
-	// Troy is a regular expression for matching Troy bank card.
-	Troy = regexp.MustCompile(`^9792[0-9]{12}$`)
-
-	// MIR is a regular expression for matching MIR bank card.
-	MIR = regexp.MustCompile(`^220[0-9]{13}$`)
-
-	// UATP is a regular expression for matching UATP bank card.
-	UATP = regexp.MustCompile(`^1[0-9]{14}$`)
-
-	// Hipercard is a regular expression for matching Hipercard bank card.
-	Hipercard = regexp.MustCompile(`^(606282\d{10}(\d{3})?)|(3841\d{02}\d{10})$`)
-
-	// Naranja is a regular expression for matching Naranja bank card.
-	Naranja = regexp.MustCompile(`^589562\d{10}$`)
-
-	// TarjetaShopping is a regular expression for matching
-	// Tarjeta Shopping bank card.
-	TarjetaShopping = regexp.MustCompile(`^603488\d{10}$`)
-
-	// ELO is a regular expression for matching ELO bank card.
-	ELO = regexp.MustCompile(`^(401178|401179|431274|438935|451416|457393|457631|457632|504175|627780|636297|636368|636369)\d{10}$`)
-)
-
-// BankCard validates a bank card number based on provided card types.
-// If no type is given, it checks against any type.
+// CardKind identifies a bank card brand accepted by BankCard.
 //
-// BankCard uses Luhn algorithm to validate the card number
-// and tests as Credit Card and Debit Card.
+// In contrast to exporting the underlying regular expressions, an opaque
+// kind keeps the matching patterns immutable: callers select a brand by
+// constant and cannot replace a global regex and silently break validation
+// for the whole process.
+//
+// The zero value is not a valid kind. Use the exported constants below.
+type CardKind int
+
+const (
+	// Visa matches Visa cards.
+	Visa CardKind = iota + 1
+
+	// MasterCard matches MasterCard cards.
+	MasterCard
+
+	// AmericanExpress matches American Express cards.
+	AmericanExpress
+
+	// DiscoverCard matches Discover cards.
+	DiscoverCard
+
+	// DCI matches Diners Club International cards.
+	DCI
+
+	// UnionPay matches UnionPay cards.
+	UnionPay
+
+	// JCB matches JCB cards.
+	JCB
+
+	// Argencard matches Argencard cards.
+	Argencard
+
+	// Cabal matches Cabal cards.
+	Cabal
+
+	// Cencosud matches Cencosud cards.
+	Cencosud
+
+	// ChinaUnionPay matches China UnionPay cards.
+	ChinaUnionPay
+
+	// DinersClubCarteBlanche matches Diners Club Carte Blanche cards.
+	DinersClubCarteBlanche
+
+	// DinersClubInternational matches Diners Club International cards.
+	DinersClubInternational
+
+	// DinersClubUSAndCanada matches Diners Club US & Canada cards.
+	DinersClubUSAndCanada
+
+	// DinersClub matches Diners Club cards.
+	DinersClub
+
+	// InstaPayment matches InstaPayment cards.
+	InstaPayment
+
+	// Laser matches Laser cards.
+	Laser
+
+	// Maestro matches Maestro cards.
+	Maestro
+
+	// VisaElectron matches Visa Electron cards.
+	VisaElectron
+
+	// Dankort matches Dankort cards.
+	Dankort
+
+	// RuPay matches RuPay cards.
+	RuPay
+
+	// InterPayment matches InterPayment cards.
+	InterPayment
+
+	// Troy matches Troy cards.
+	Troy
+
+	// MIR matches MIR cards.
+	MIR
+
+	// UATP matches UATP cards.
+	UATP
+
+	// Hipercard matches Hipercard cards.
+	Hipercard
+
+	// Naranja matches Naranja cards.
+	Naranja
+
+	// TarjetaShopping matches Tarjeta Shopping cards.
+	TarjetaShopping
+
+	// ELO matches Elo cards.
+	ELO
+)
+
+// cardKindNames maps each card kind to a human-readable name, used by
+// the String method (handy in test failures and logs).
+var cardKindNames = map[CardKind]string{
+	Visa:                    "Visa",
+	MasterCard:              "MasterCard",
+	AmericanExpress:         "AmericanExpress",
+	DiscoverCard:            "DiscoverCard",
+	DCI:                     "DCI",
+	UnionPay:                "UnionPay",
+	JCB:                     "JCB",
+	Argencard:               "Argencard",
+	Cabal:                   "Cabal",
+	Cencosud:                "Cencosud",
+	ChinaUnionPay:           "ChinaUnionPay",
+	DinersClubCarteBlanche:  "DinersClubCarteBlanche",
+	DinersClubInternational: "DinersClubInternational",
+	DinersClubUSAndCanada:   "DinersClubUSAndCanada",
+	DinersClub:              "DinersClub",
+	InstaPayment:            "InstaPayment",
+	Laser:                   "Laser",
+	Maestro:                 "Maestro",
+	VisaElectron:            "VisaElectron",
+	Dankort:                 "Dankort",
+	RuPay:                   "RuPay",
+	InterPayment:            "InterPayment",
+	Troy:                    "Troy",
+	MIR:                     "MIR",
+	UATP:                    "UATP",
+	Hipercard:               "Hipercard",
+	Naranja:                 "Naranja",
+	TarjetaShopping:         "TarjetaShopping",
+	ELO:                     "ELO",
+}
+
+// String returns the human-readable name of the card kind, or "CardKind(n)"
+// for an unknown value.
+func (k CardKind) String() string {
+	if name, ok := cardKindNames[k]; ok {
+		return name
+	}
+	return "CardKind(" + strconv.Itoa(int(k)) + ")"
+}
+
+// anyCreditCard matches any supported credit card scheme. It is the pattern
+// used by BankCard when no specific kind is requested.
+var anyCreditCard = regexp.MustCompile(`^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11}|6[27][0-9]{14})$`)
+
+// cardPatterns holds the brand-specific regular expression for every
+// CardKind. The patterns are unexported and immutable from the outside.
+var cardPatterns = map[CardKind]*regexp.Regexp{
+	Visa:                    regexp.MustCompile(`^4[0-9]{12}(?:[0-9]{3})?$`),
+	MasterCard:              regexp.MustCompile(`^5[1-5][0-9]{14}$`),
+	AmericanExpress:         regexp.MustCompile(`^3[47][0-9]{13}$`),
+	DiscoverCard:            regexp.MustCompile(`^6(?:011\d{12}|5\d{14}|4[4-9]\d{13}|22(?:1(?:2[6-9]|[3-9]\d)|[2-8]\d{2}|9(?:[01]\d|2[0-5]))\d{10})$`),
+	DCI:                     regexp.MustCompile(`^3(?:0[0-5]|[68][0-9])[0-9]{11}$`),
+	UnionPay:                regexp.MustCompile(`^62[0-5]\d{13,16}$`),
+	JCB:                     regexp.MustCompile(`^(?:2131|1800|35[0-9]{3})[0-9]{11}$`),
+	Argencard:               regexp.MustCompile(`^501105\d{10}$`),
+	Cabal:                   regexp.MustCompile(`^6042(0[1-9]|10|1[1-9])\d{6}$`),
+	Cencosud:                regexp.MustCompile(`^603493\d{10}$`),
+	ChinaUnionPay:           regexp.MustCompile(`^62[0-9]{14,17}$`),
+	DinersClubCarteBlanche:  regexp.MustCompile(`^30[0-5][0-9]{11}$`),
+	DinersClubInternational: regexp.MustCompile(`^36[0-9]{12}$`),
+	DinersClubUSAndCanada:   regexp.MustCompile(`^5[45][0-9]{14}$`),
+	DinersClub:              regexp.MustCompile(`^3(?:0[0-5]|[68][0-9])[0-9]{11}$`),
+	InstaPayment:            regexp.MustCompile(`^63[7-9][0-9]{13}$`),
+	Laser:                   regexp.MustCompile(`^(6304|670[69]|6771)[0-9]{12,15}$`),
+	Maestro:                 regexp.MustCompile(`^(5018|5020|5038|6304|6759|676[1-3])[0-9]{8,15}$`),
+	VisaElectron:            regexp.MustCompile(`^(4026|417500|4508|4844|491[37])[0-9]{12}$`),
+	Dankort:                 regexp.MustCompile(`^(5019)[0-9]{12}$`),
+	RuPay:                   regexp.MustCompile(`^(508[5-9][0-9]{1}|60698|60699|607[0-8][0-9]{1}|6079[0-7]|60798[0-4]|608[0-4][0-9]{1}|608500)[0-9]{6,9}$`),
+	InterPayment:            regexp.MustCompile(`^636[0-9]{12,15}$`),
+	Troy:                    regexp.MustCompile(`^9792[0-9]{12}$`),
+	MIR:                     regexp.MustCompile(`^220[0-9]{13}$`),
+	UATP:                    regexp.MustCompile(`^1[0-9]{14}$`),
+	// BUG-07 fix: anchor the whole alternation, not just one branch, and
+	// write \d{2} instead of the odd \d{02}.
+	Hipercard:       regexp.MustCompile(`^(?:606282\d{10}(?:\d{3})?|3841\d{2}\d{10})$`),
+	Naranja:         regexp.MustCompile(`^589562\d{10}$`),
+	TarjetaShopping: regexp.MustCompile(`^603488\d{10}$`),
+	ELO:             regexp.MustCompile(`^(401178|401179|431274|438935|451416|457393|457631|457632|504175|627780|636297|636368|636369)\d{10}$`),
+}
+
+// BankCard validates a bank card number, optionally restricting it to one
+// or more card brands.
+//
+// Validation always combines two independent checks: the Luhn checksum and a
+// brand pattern. If no kind is given, the number is checked against the union
+// of all supported brands. If one or more kinds are given, the number is
+// valid when it passes the Luhn check AND matches at least one of them.
+//
+// Spaces and hyphens in the input are ignored, so grouped numbers such as
+// "4111 1111 1111 1111" validate the same as "4111111111111111".
 //
 // Example usage:
 //
 //	is.BankCard("4111111111111111")
-//	// Output: true
-//	// As it's a valid card number, checked against any type.
+//	// Output: true (valid number, any brand)
 //
 //	is.BankCard("4111111111111111", is.MasterCard)
-//	// Output: false
-//	// It's a valid card but not of type MasterCard.
+//	// Output: false (valid number, but not a MasterCard)
 //
 //	is.BankCard("4111111111111111", is.Visa)
-//	// Output: true
-//	// It's a valid Visa card.
+//	// Output: true (valid Visa)
 //
 //	is.BankCard("4111111111111111", is.Visa, is.MasterCard)
-//	// Output: true
-//	// It's a valid card of either Visa or MasterCard type.
+//	// Output: true (matches Visa or MasterCard)
 //
 //	is.BankCard("1234567812345678")
-//	// Output: false
-//	// Not a valid card number.
-func BankCard(str string, kinds ...*regexp.Regexp) bool {
+//	// Output: false (fails the Luhn check)
+func BankCard(str string, kinds ...CardKind) bool {
 	if len(kinds) == 0 {
 		return cardChecker(str, anyCreditCard)
 	}
 
 	for _, kind := range kinds {
-		if cardChecker(str, kind) {
+		if regex, ok := cardPatterns[kind]; ok && cardChecker(str, regex) {
 			return true
 		}
 	}
@@ -151,8 +231,6 @@ func BankCard(str string, kinds ...*regexp.Regexp) bool {
 
 // The cardChecker checks whether a string matches a given card regex and
 // validates its checksum according to the Luhn algorithm.
-// It's used internally in the BankCard and CreditCard functions.
-// This function isn't exported, so it can't be used outside the 'is' package.
 //
 // Here's how it works:
 //  1. It ignores spaces and hyphens in the input string.
@@ -162,20 +240,28 @@ func BankCard(str string, kinds ...*regexp.Regexp) bool {
 //
 // It returns true if all checks pass, and false otherwise.
 func cardChecker(n string, regex *regexp.Regexp) bool {
-	// Remove spaces and hyphens from the input string.
-	clean := strings.Map(func(r rune) rune {
-		if r == ' ' || r == '-' {
-			return -1 // remove the character
-		}
-		return r
-	}, n)
+	// Fast path: only allocate a cleaned copy if there is something to
+	// clean. Typical input is already free of spaces and hyphens.
+	clean := n
+	if strings.ContainsAny(n, " -") {
+		clean = strings.Map(func(r rune) rune {
+			if r == ' ' || r == '-' {
+				return -1 // remove the character
+			}
+			return r
+		}, n)
+	}
+
+	if clean == "" {
+		return false
+	}
 
 	var sum int
 	parity := len(clean) % 2
 
 	for i, r := range clean {
-		// Check if the character is a digit.
-		if !unicode.IsDigit(r) {
+		// Only ASCII digits are valid in a card number.
+		if r < '0' || r > '9' {
 			return false
 		}
 
@@ -196,9 +282,5 @@ func cardChecker(n string, regex *regexp.Regexp) bool {
 	}
 
 	// Check the regular expression match.
-	if !regex.MatchString(clean) {
-		return false
-	}
-
-	return true
+	return regex.MatchString(clean)
 }

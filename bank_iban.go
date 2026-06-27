@@ -87,8 +87,6 @@ Russia*RU*false*33*true*true*RU0204452560040702810412345678901
 */
 
 import (
-	"fmt"
-	"math/big"
 	"strings"
 
 	"github.com/goloop/g"
@@ -109,48 +107,31 @@ var ibanLenPatterns = map[string]int{
 	"SE": 24, "CH": 21, "TL": 23, "TN": 24, "GB": 22, "RU": 33,
 }
 
-// letterToNumberCache is a cache for the mapLetterToNumber function.
-// Is initialized in init().
-var letterToNumberCache = make(map[rune]int)
-
-// The mapLetterToNumber converts a letter to a number as per IBAN
-// specifications. For example, 'A' is mapped to 10, 'B' to 11 etc.
-func mapLetterToNumber(letter rune) int {
-	if value, ok := letterToNumberCache[letter]; ok {
-		return value
-	}
-
-	return 0
-}
-
-// CalculateIBANChecksum calculates the checksum of an IBAN as per the
-// specifications. This is used to verify the validity of an IBAN number.
-func CalculateIBANChecksum(iban string) *big.Int {
-	mapped := ""
-
-	// Cycle through each IBAN character.
-	for _, letter := range iban {
-		if letter >= 'A' && letter <= 'Z' {
-			// Convert the letter to a number.
-			mapped += fmt.Sprintf("%d", mapLetterToNumber(letter))
-		} else if letter >= '0' && letter <= '9' {
-			// Append digits as they are.
-			mapped += string(letter)
-		} else {
+// CalculateIBANChecksum returns the ISO 7064 MOD-97-10 check value of the
+// given (already rearranged) IBAN string. Each letter A-Z is expanded to its
+// two-digit value (A=10, B=11, … Z=35) and each digit keeps its value; the
+// remainder modulo 97 is folded incrementally, so no big integer is ever
+// materialized and the call allocates nothing.
+//
+// It returns -1 if the input contains any character outside [0-9A-Z].
+// A rearranged IBAN is valid precisely when this value equals 1.
+func CalculateIBANChecksum(iban string) int {
+	rem := 0
+	for _, r := range iban {
+		switch {
+		case r >= '0' && r <= '9':
+			rem = (rem*10 + int(r-'0')) % 97
+		case r >= 'A' && r <= 'Z':
+			// A letter expands to two digits (10..35), so the running
+			// remainder shifts by two decimal places.
+			rem = (rem*100 + int(r-'A') + 10) % 97
+		default:
 			// Invalid character found.
-			return big.NewInt(-1)
+			return -1
 		}
 	}
 
-	number := new(big.Int)
-	_, ok := number.SetString(mapped, 10)
-	if !ok {
-		// Error converting string to number.
-		return big.NewInt(-1)
-	}
-
-	// Return the remainder from division by 97.
-	return new(big.Int).Mod(number, big.NewInt(97))
+	return rem
 }
 
 // Iban checks if a given IBAN (International Bank Account Number)
@@ -201,9 +182,12 @@ func Iban(iban string, strict ...bool) bool {
 		// Remove spaces and convert to uppercase.
 		iban = strings.ToUpper(strings.ReplaceAll(iban, " ", ""))
 	} else {
-		// In strict mode, check for invalid characters.
+		// In strict mode, only ASCII digits and uppercase letters are
+		// allowed: no spaces, lowercase, or punctuation.
 		for _, ch := range iban {
-			if ch < '0' || ch > '9' && ch < 'A' || ch > 'Z' {
+			isDigit := ch >= '0' && ch <= '9'
+			isUpper := ch >= 'A' && ch <= 'Z'
+			if !isDigit && !isUpper {
 				return false
 			}
 		}
@@ -221,16 +205,10 @@ func Iban(iban string, strict ...bool) bool {
 		return false
 	}
 
-	// Move the first four characters to the end of the string.
+	// Move the first four characters to the end of the string and verify
+	// the ISO 7064 MOD-97-10 check value (a valid IBAN yields exactly 1).
 	rearrangedIban := iban[4:] + iban[0:4]
-
-	// Calculate the checksum
-	remainder := CalculateIBANChecksum(rearrangedIban)
-	if remainder.Sign() < 0 {
-		// Invalid character encountered in checksum calculation.
-		return false
-	}
-	return remainder.Cmp(big.NewInt(1)) == 0
+	return CalculateIBANChecksum(rearrangedIban) == 1
 }
 
 // IBAN is a synonym for the Iban function. This naming approach adheres
@@ -240,4 +218,31 @@ func Iban(iban string, strict ...bool) bool {
 // according to the defined pattern and checksum.
 func IBAN(iban string, strict ...bool) bool {
 	return Iban(iban, strict...)
+}
+
+// IBANCountry validates the IBAN and, if it is valid, returns its ISO 3166-1
+// alpha-2 country code (the first two characters) together with true. For an
+// invalid IBAN it returns an empty string and false.
+//
+// The strict parameter has the same meaning as in Iban: in non-strict mode
+// (default) spaces are removed and letters are upper-cased before validation,
+// so the returned country code is always upper-case.
+//
+// Example usage:
+//
+//	is.IBANCountry("DE89370400440532013000")    // Returns: "DE", true
+//	is.IBANCountry("gb82 west 1234 5698 7654 32") // Returns: "GB", true
+//	is.IBANCountry("DE0037040044053201300")      // Returns: "", false
+func IBANCountry(iban string, strict ...bool) (string, bool) {
+	if !Iban(iban, strict...) {
+		return "", false
+	}
+
+	// Re-apply the non-strict normalization so the returned code matches
+	// what was validated (upper-case, spaces removed).
+	if !g.All(strict...) {
+		iban = strings.ToUpper(strings.ReplaceAll(iban, " ", ""))
+	}
+
+	return iban[0:2], true
 }

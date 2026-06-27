@@ -22,12 +22,3 @@ type Numerable interface {
 type Verifiable interface {
 	g.Verifiable
 }
-
-// The init initializes this package.
-func init() {
-	// Initialize the letterToNumberCache map.
-	// See IBAN validation for more details.
-	for _, letter := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
-		letterToNumberCache[letter] = int(letter-'A') + 10
-	}
-}

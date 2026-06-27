@@ -44,12 +44,10 @@ func TestNumeric(t *testing.T) {
 		{"1234", true},
 		{"+1234", true},
 		{"-1234", true},
-		{"Ⅳ", true},
 		{"1234abc", false},
 		{"", false},
 		{"1.23", true},
 		{"1,23", true},
-		{"三・十四", true},
 		{"0000", true},
 		{" 1234", false},
 		{"1234 ", false},
@@ -57,9 +55,30 @@ func TestNumeric(t *testing.T) {
 		{"0b10001", false},
 		{"0o21", false},
 		{"0x11", false},
-		{"0", true},
-		{"⅕", true},
-		{"一", true},
+
+		// BUG-02: letter-based and ideographic "numerals" are NOT decimal
+		// digits and must be rejected (otherwise ordinary words pass).
+		{"Ⅳ", false},    // Roman numeral (category Nl)
+		{"三・十四", false}, // CJK numerals (category Lo)
+		{"⅕", false},    // vulgar fraction (category No)
+		{"一", false},    // CJK numeral
+		{"שלום", false}, // Hebrew word ("peace") — letters, not digits
+		{"ΑΒΓ", false},  // Greek letters
+		{"ԱԲԳ", false},  // Armenian letters
+
+		// True decimal digits of non-ASCII scripts (category Nd) pass.
+		{"٣", true},    // Arabic-Indic three
+		{"٣٫١٤", true}, // Arabic-Indic with Arabic decimal separator
+		{"۴۲", true},   // Persian digits
+		{"१२३", true},  // Devanagari digits
+
+		// BUG-03: a separator or sign with no digit is not a number.
+		{".", false},
+		{",", false},
+		{"-", false},
+		{"+", false},
+		{"+.", false},
+		{"-,", false},
 	}
 
 	for _, tc := range testCases {

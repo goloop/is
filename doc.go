@@ -9,12 +9,12 @@
 //   - Identity and Access: email addresses, nicknames, variable names;
 //   - Financial: bank card numbers, IBAN accounts;
 //   - Geographic: latitude/longitude coordinates;
-//   - Network: IPv4/IPv6 addresses;
-//   - Telecommunications: phone numbers in E.164 format;
+//   - Network: IPv4/IPv6 addresses, MAC addresses, URLs, hostnames, domains;
+//   - Telecommunications: phone numbers in E.164 format, IMEI/IMSI;
 //   - String Types: alphanumeric, numeric, hexadecimal, binary;
 //   - Numbers: even/odd, positive/negative, natural numbers;
 //   - Encodings: Base64, Base64URL, JWT tokens;
-//   - Data formats: MD5 hashes.
+//   - Data formats: MD5/SHA-1/SHA-256/SHA-512 hashes, UUID.
 //
 // # Design Philosophy
 //
@@ -79,6 +79,10 @@
 //
 //	is.IPv4("192.168.0.1")           // IPv4 address
 //	is.IPv6("2001:db8::1")           // IPv6 address
+//	is.MAC("00:1b:63:84:45:e6")      // MAC address
+//	is.URL("https://example.com")    // Absolute URL
+//	is.Hostname("example.com")       // RFC 1123 hostname
+//	is.Domain("example.com")         // Domain name
 //
 // Phone Number Validation:
 //
@@ -103,6 +107,8 @@
 //
 //	is.Base64("SGVsbG8=")            // Base64 encoding
 //	is.MD5("d41d8cd98f00b204...")    // MD5 hash
+//	is.SHA256("e3b0c44298fc...")     // SHA-256 hash
+//	is.UUID("550e8400-e29b...")      // UUID
 //	is.JWT("eyJhbGciOiJIUzI...")     // JWT token
 //
 // For more detailed information about specific validation functions,
