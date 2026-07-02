@@ -3,7 +3,7 @@ package is
 import (
 	"testing"
 
-	"github.com/goloop/g"
+	"github.com/goloop/g/v2"
 )
 
 // TestEmail tests the Email function.

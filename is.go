@@ -1,6 +1,6 @@
 package is
 
-import "github.com/goloop/g"
+import "github.com/goloop/g/v2"
 
 // Numerable is an interface type that is satisfied by all numeric types
 // in Go, both integer and floating point. This includes int, int8, int16,

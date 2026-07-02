@@ -1,7 +1,7 @@
 package is
 
 import (
-	"github.com/goloop/g"
+	"github.com/goloop/g/v2"
 )
 
 // Even checks if a value is an even number.

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/goloop/g"
+	"github.com/goloop/g/v2"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/goloop/g"
+	"github.com/goloop/g/v2"
 )
 
 var (

@@ -89,7 +89,7 @@ Russia*RU*false*33*true*true*RU0204452560040702810412345678901
 import (
 	"strings"
 
-	"github.com/goloop/g"
+	"github.com/goloop/g/v2"
 )
 
 var ibanLenPatterns = map[string]int{
