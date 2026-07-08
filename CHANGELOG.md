@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0]
+
+Validation correctness: fixed card patterns, a wider email local part and
+several smaller rule and documentation fixes.
+
+### Fixed
+- Card brand patterns now match real 16-digit numbers: `RuPay` and `Cabal`
+  (which required 11-15 and exactly 12 digits) and the `417500` `VisaElectron`
+  branch (which required 18); `MIR` is limited to its real BIN range 2200-2204
+  and accepts 16-19 digits.
+- `BankCard` with no kind now checks the number against the union of *every*
+  supported brand (built from the brand table), so schemes such as `MIR`,
+  `Maestro` and `Troy` validate without an explicit kind, as documented.
+- `Email` accepts common deliverable local parts with `+` (plus-addressing),
+  `_`, `%` and `=`, while still rejecting a leading/trailing or doubled
+  separator.
+- `Domain` accepts a punycode (IDN A-label) TLD such as `xn--p1ai`, matching
+  `Hostname`.
+- The IBAN length table adds `FK`, `MN`, `NI` and `OM` (added to the SWIFT
+  registry in 2023-2024).
+- `Title` returns false for a string with no letters and accepts a titlecase
+  digraph (category Lt) as a word start.
+- The godoc examples for `Alpha`/`Alnum` now correctly show that any Unicode
+  letter is accepted.
+
+### Changed
+- **Behaviour:** `E164` and `Phone` reject a country code starting with `0`
+  (no E.164 number does).
+- **Behaviour:** `SelectorName` no longer rejects names that coincide with a
+  CSS keyword (e.g. `hover`, `color`); such class/id names are legal. The
+  undocumented reserved-word check was removed.
+- **Behaviour:** `VariableNameFor` accepts sigilled Ruby names (`@@class`,
+  `@def`, `$if`): a sigil disambiguates from a keyword.
+
 ## [2.0.0]
 
 This is a major release published under the module path

@@ -8,13 +8,14 @@ import (
 )
 
 var (
-	// The e164Regex is regular expression for E.164.
-	e164Regex = regexp.MustCompile(`^\+\d{1,15}$`)
+	// The e164Regex is regular expression for E.164. The country code (first
+	// digit) is 1-9: no E.164 number starts with a zero.
+	e164Regex = regexp.MustCompile(`^\+[1-9]\d{0,14}$`)
 
 	// The phoneRegex matches a '+' followed by 1 to 15 digits, the maximum
 	// length of an international number under E.164, applied after the
-	// grouping separators have been removed.
-	phoneRegex = regexp.MustCompile(`^\+\d{1,15}$`)
+	// grouping separators have been removed. The first digit is 1-9.
+	phoneRegex = regexp.MustCompile(`^\+[1-9]\d{0,14}$`)
 )
 
 // isASCIIDigits reports whether s is non-empty and consists solely of
@@ -141,7 +142,7 @@ func IMEI[T string | int64](imei T) bool {
 // Example usage:
 //
 //	is.E164("+123456789")   // Returns: true
-//	is.E164("+0123456789")  // Returns: true
+//	is.E164("+0123456789")  // Returns: false, country code cannot start with 0
 //	is.E164("+")            // Returns: false, no digits after plus sign
 //	is.E164("+1234567890a") // Returns: false, non-digit character
 //	is.E164("1234567890")   // Returns: false, no plus sign

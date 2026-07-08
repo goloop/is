@@ -15,7 +15,7 @@ func TestEmail(t *testing.T) {
 		".name@example.com":                false,
 		"name-@example.com":                false,
 		"-name@example.com":                false,
-		"name+surname@example.com":         false,
+		"name+surname@example.com":         true,
 		"!def!xyz%abc@test.org":            false,
 		"+1~1+@test.org":                   false,
 		"+@b.c":                            false,

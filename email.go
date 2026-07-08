@@ -6,14 +6,22 @@ import (
 )
 
 var (
-	// Regular expression pattern for a valid email slug (local/domain part):
+	// Regular expression pattern for a valid email slug (domain part):
 	// runs of letters/digits joined by single '.' or '-' separators. A slug
 	// starts and ends with a letter or digit and never contains two
 	// separators in a row, so "a..b" and "a--b" are rejected.
 	slugPattern = `[\p{L}\p{N}]+(?:[.-][\p{L}\p{N}]+)*`
 
+	// Pattern for the email local part: runs of a practical subset of RFC 5322
+	// atext characters (letters, digits and _ + % = ) joined by single '.' or
+	// '-' separators. This admits common deliverable addresses such as
+	// plus-addressing ("user+tag") and underscores ("user_name") while still
+	// rejecting a leading/trailing separator and two separators in a row
+	// ("a--b", "a.-b").
+	localPattern = `[\p{L}\p{N}_%+=]+(?:[.-][\p{L}\p{N}_%+=]+)*`
+
 	// Compiled regex for the local part of the email.
-	localRegex = regexp.MustCompile(`^` + slugPattern + `$`)
+	localRegex = regexp.MustCompile(`^` + localPattern + `$`)
 
 	// Compiled regex for the domain part of the email.
 	domainRegex = regexp.MustCompile(`^` + slugPattern + `\.[\p{L}\p{N}]{2,}$`)

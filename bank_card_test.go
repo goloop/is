@@ -167,7 +167,7 @@ func TestBankCard(t *testing.T) {
 		},
 		{
 			name:     "Valid Cabal card",
-			card:     "604211212211",
+			card:     "6042011234567893",
 			kinds:    []CardKind{Cabal},
 			expected: true,
 		},

@@ -193,6 +193,7 @@ func Hostname(v string) bool {
 //	is.Domain("localhost")       // Returns: false, no TLD
 //	is.Domain("example.123")     // Returns: false, numeric TLD
 //	is.Domain("example.c")       // Returns: false, one-letter TLD
+//	is.Domain("example.xn--p1ai") // Returns: true, punycode (IDN) TLD
 //	is.Domain("")                // Returns: false, empty string
 func Domain(v string) bool {
 	if !Hostname(v) {
@@ -210,12 +211,26 @@ func Domain(v string) bool {
 		return false
 	}
 
-	for j := 0; j < len(tld); j++ {
-		c := tld[j]
-		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
-			return false
+	// A punycode (IDN A-label) TLD such as "xn--p1ai" (.рф) is valid: its label
+	// characters were already checked by Hostname. Otherwise the TLD must be
+	// ASCII letters only, which rejects a purely numeric TLD.
+	if !hasACEPrefix(tld) {
+		for j := 0; j < len(tld); j++ {
+			c := tld[j]
+			if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+				return false
+			}
 		}
 	}
 
 	return true
+}
+
+// hasACEPrefix reports whether s begins with the case-insensitive IDN ACE
+// prefix "xn--".
+func hasACEPrefix(s string) bool {
+	return len(s) >= 4 &&
+		(s[0] == 'x' || s[0] == 'X') &&
+		(s[1] == 'n' || s[1] == 'N') &&
+		s[2] == '-' && s[3] == '-'
 }

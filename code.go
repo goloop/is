@@ -1117,6 +1117,7 @@ func VariableNameFor(v string, language string) (bool, error) {
 
 	if langWords, exists := reservedWords[language]; exists {
 		checkWord := v
+		skipReserved := false
 
 		// Remove prefixes and suffixes for checking reserved words.
 		switch language {
@@ -1125,12 +1126,13 @@ func VariableNameFor(v string, language string) (bool, error) {
 				checkWord = checkWord[1:]
 			}
 		case "ruby":
-			if strings.HasPrefix(checkWord, "@@") {
-				checkWord = checkWord[2:]
-			} else if strings.HasPrefix(checkWord, "@") {
-				checkWord = checkWord[1:]
-			} else if strings.HasPrefix(checkWord, "$") {
-				checkWord = checkWord[1:]
+			// A sigil (@@, @, $) makes the name a variable regardless of any
+			// keyword, so "@@class", "@def" and "$if" are legal Ruby variable
+			// names: the keyword restriction applies only to bare identifiers.
+			if strings.HasPrefix(checkWord, "@@") ||
+				strings.HasPrefix(checkWord, "@") ||
+				strings.HasPrefix(checkWord, "$") {
+				skipReserved = true
 			}
 			if strings.HasSuffix(checkWord, "?") {
 				checkWord = checkWord[:len(checkWord)-1]
@@ -1140,11 +1142,14 @@ func VariableNameFor(v string, language string) (bool, error) {
 		}
 
 		// Check for reserved words considering case sensitivity.
-		if config.caseSensitive {
+		switch {
+		case skipReserved:
+			// A sigilled Ruby name never collides with a keyword.
+		case config.caseSensitive:
 			if _, isReserved := langWords[checkWord]; isReserved {
 				return false, nil
 			}
-		} else {
+		default:
 			checkWord = strings.ToLower(checkWord)
 			for reserved := range langWords {
 				if strings.ToLower(reserved) == checkWord {
@@ -1321,29 +1326,12 @@ func SelectorName(v string, strict ...bool) bool {
 	// Determine if strict mode is enabled.
 	isStrict := g.All(strict...)
 
-	// Select the appropriate regex based on the mode.
+	// Select the appropriate regex based on the mode. A class or id name that
+	// happens to coincide with a CSS property or pseudo-class (e.g. "hover",
+	// "color") is a perfectly legal selector name, so no reserved-word list is
+	// consulted here.
 	rgex := g.If(isStrict, selectorStrictRegex, selectorRegex)
-	isValidSelector := rgex.MatchString(v)
-
-	// If valid selector, also check if it's not a reserved word in CSS.
-	if isValidSelector {
-		// Remove leading # or . for checking.
-		checkWord := v
-		if len(checkWord) > 0 && (checkWord[0] == '#' || checkWord[0] == '.') {
-			checkWord = checkWord[1:]
-		}
-
-		// Check in CSS reserved words if strict mode is enabled.
-		if isStrict {
-			if cssWords, exists := reservedWords["css"]; exists {
-				if _, reserved := cssWords[checkWord]; reserved {
-					return false
-				}
-			}
-		}
-	}
-
-	return isValidSelector
+	return rgex.MatchString(v)
 }
 
 // Sel is synonym for SelectorName function.

@@ -549,10 +549,10 @@ func TestSel(t *testing.T) {
 			want:   false,
 		},
 		{
-			name:   "Reserved CSS Selector",
+			name:   "CSS keyword is a legal selector name",
 			v:      "inherit",
 			strict: true,
-			want:   false, // 'inherit' is a reserved CSS keyword
+			want:   true, // a class/id may coincide with a CSS keyword
 		},
 		{
 			name:   "Non-Reserved CSS Selector",

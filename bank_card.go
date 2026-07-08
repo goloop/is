@@ -2,8 +2,10 @@ package is
 
 import (
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // CardKind identifies a bank card brand accepted by BankCard.
@@ -148,9 +150,21 @@ func (k CardKind) String() string {
 	return "CardKind(" + strconv.Itoa(int(k)) + ")"
 }
 
-// anyCreditCard matches any supported credit card scheme. It is the pattern
-// used by BankCard when no specific kind is requested.
-var anyCreditCard = regexp.MustCompile(`^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11}|6[27][0-9]{14})$`)
+// anyCreditCard returns the pattern used by BankCard when no specific kind is
+// requested: the union of every brand pattern in cardPatterns. Building it from
+// cardPatterns keeps a single source of truth, so a new or corrected brand is
+// automatically part of the "any brand" check. It is built once, lazily.
+var anyCreditCard = sync.OnceValue(func() *regexp.Regexp {
+	// Sort the brand bodies for a deterministic combined pattern (map
+	// iteration order is randomized). Order does not affect matching.
+	bodies := make([]string, 0, len(cardPatterns))
+	for _, re := range cardPatterns {
+		body := strings.TrimSuffix(strings.TrimPrefix(re.String(), "^"), "$")
+		bodies = append(bodies, "(?:"+body+")")
+	}
+	sort.Strings(bodies)
+	return regexp.MustCompile("^(?:" + strings.Join(bodies, "|") + ")$")
+})
 
 // cardPatterns holds the brand-specific regular expression for every
 // CardKind. The patterns are unexported and immutable from the outside.
@@ -163,7 +177,7 @@ var cardPatterns = map[CardKind]*regexp.Regexp{
 	UnionPay:                regexp.MustCompile(`^62[0-5]\d{13,16}$`),
 	JCB:                     regexp.MustCompile(`^(?:2131|1800|35[0-9]{3})[0-9]{11}$`),
 	Argencard:               regexp.MustCompile(`^501105\d{10}$`),
-	Cabal:                   regexp.MustCompile(`^6042(0[1-9]|10|1[1-9])\d{6}$`),
+	Cabal:                   regexp.MustCompile(`^6042(0[1-9]|1[0-9])\d{10}$`),
 	Cencosud:                regexp.MustCompile(`^603493\d{10}$`),
 	ChinaUnionPay:           regexp.MustCompile(`^62[0-9]{14,17}$`),
 	DinersClubCarteBlanche:  regexp.MustCompile(`^30[0-5][0-9]{11}$`),
@@ -173,12 +187,12 @@ var cardPatterns = map[CardKind]*regexp.Regexp{
 	InstaPayment:            regexp.MustCompile(`^63[7-9][0-9]{13}$`),
 	Laser:                   regexp.MustCompile(`^(6304|670[69]|6771)[0-9]{12,15}$`),
 	Maestro:                 regexp.MustCompile(`^(5018|5020|5038|6304|6759|676[1-3])[0-9]{8,15}$`),
-	VisaElectron:            regexp.MustCompile(`^(4026|417500|4508|4844|491[37])[0-9]{12}$`),
+	VisaElectron:            regexp.MustCompile(`^(?:(?:4026|4508|4844|491[37])\d{12}|417500\d{10})$`),
 	Dankort:                 regexp.MustCompile(`^(5019)[0-9]{12}$`),
-	RuPay:                   regexp.MustCompile(`^(508[5-9][0-9]{1}|60698|60699|607[0-8][0-9]{1}|6079[0-7]|60798[0-4]|608[0-4][0-9]{1}|608500)[0-9]{6,9}$`),
+	RuPay:                   regexp.MustCompile(`^(?:(?:508[5-9]\d|60698|60699|607[0-8]\d|6079[0-7]|608[0-4]\d)\d{11}|(?:60798[0-4]|608500)\d{10})$`),
 	InterPayment:            regexp.MustCompile(`^636[0-9]{12,15}$`),
 	Troy:                    regexp.MustCompile(`^9792[0-9]{12}$`),
-	MIR:                     regexp.MustCompile(`^220[0-9]{13}$`),
+	MIR:                     regexp.MustCompile(`^220[0-4][0-9]{12,15}$`),
 	UATP:                    regexp.MustCompile(`^1[0-9]{14}$`),
 	// BUG-07 fix: anchor the whole alternation, not just one branch, and
 	// write \d{2} instead of the odd \d{02}.
@@ -217,7 +231,7 @@ var cardPatterns = map[CardKind]*regexp.Regexp{
 //	// Output: false (fails the Luhn check)
 func BankCard(str string, kinds ...CardKind) bool {
 	if len(kinds) == 0 {
-		return cardChecker(str, anyCreditCard)
+		return cardChecker(str, anyCreditCard())
 	}
 
 	for _, kind := range kinds {

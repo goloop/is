@@ -148,9 +148,9 @@ func TestE164(t *testing.T) {
 			want:     true,
 		},
 		{
-			name:     "Valid E.164 phone number with leading zero",
+			name:     "E.164 country code cannot start with zero",
 			phoneNum: "+0123456789",
-			want:     true,
+			want:     false,
 		},
 		{
 			name:     "Invalid E.164 phone number - no digits after plus sign",

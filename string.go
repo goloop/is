@@ -202,7 +202,7 @@ func Float(s string) bool {
 //	is.Alpha("abc")   // Output: true
 //	is.Alpha("abc1")  // Output: false, contains a digit
 //	is.Alpha("abc!")  // Output: false, contains a special character
-//	is.Alpha("abcΔ")  // Output: false, contains a non-Latin letter
+//	is.Alpha("abcΔ")  // Output: true, Δ is a Unicode letter
 func Alpha(s string) bool {
 	if len(s) == 0 {
 		return false
@@ -225,7 +225,7 @@ func Alpha(s string) bool {
 //	is.Alnum("abc")         // Output: true
 //	is.Alnum("123")         // Output: true
 //	is.Alnum("abc!")        // Output: false
-//	is.Alnum("abcΔ")        // Output: false
+//	is.Alnum("abcΔ")        // Output: true, Δ is a Unicode letter
 func Alnum(s string) bool {
 	if len(s) == 0 {
 		return false
@@ -310,10 +310,17 @@ func Title(s string) bool {
 		return !unicode.IsLetter(r)
 	})
 
+	// A string with no letter word (e.g. "123" or "!!!") is not titlecased.
+	if len(words) == 0 {
+		return false
+	}
+
 	for _, word := range words {
 		for index, char := range word {
 			if index == 0 {
-				if !unicode.IsUpper(char) {
+				// The leading letter may be upper- or titlecase; a titlecase
+				// digraph such as 'ǅ' (category Lt) is a valid word start.
+				if !unicode.IsUpper(char) && !unicode.IsTitle(char) {
 					return false
 				}
 			} else {
