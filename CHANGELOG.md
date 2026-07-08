@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0]
+
+### Added
+- `TokenOctet(b byte) bool` reports whether a byte is an HTTP token character
+  (`tchar`), and `IsToken(s string) bool` reports whether a string is a whole
+  HTTP token (`1*tchar`), following the token grammar in RFC 9110 section
+  5.6.2. These validate values such as HTTP field names and request-method
+  names.
+
 ## [2.2.0]
 
 Validation correctness: fixed card patterns, a wider email local part and
