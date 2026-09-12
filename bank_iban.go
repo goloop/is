@@ -107,6 +107,8 @@ var ibanLenPatterns = map[string]int{
 	"SE": 24, "CH": 21, "TL": 23, "TN": 24, "GB": 22, "RU": 33,
 	// Added to the SWIFT IBAN registry in 2023-2024.
 	"FK": 18, "MN": 20, "NI": 28, "OM": 23,
+	// ISO 13616 registry members that were previously missing.
+	"HN": 28, "YE": 30,
 }
 
 // CalculateIBANChecksum returns the ISO 7064 MOD-97-10 check value of the

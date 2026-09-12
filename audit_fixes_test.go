@@ -80,6 +80,34 @@ func TestIbanNewCountries(t *testing.T) {
 	}
 }
 
+// TestIbanRegistryMissingCountries guards the HN/YE gap: Honduras (len 28) and
+// Yemen (len 30) are ISO 13616 registry members that were absent from
+// ibanLenPatterns, so every valid Honduran/Yemeni IBAN was rejected. The
+// official-registry example IBANs must validate, while a mutated check digit
+// (same length) and a wrong length must still be rejected, confirming the
+// mod-97 checksum is enforced and not just the length.
+func TestIbanRegistryMissingCountries(t *testing.T) {
+	cases := []struct {
+		name string
+		iban string
+		want bool
+	}{
+		{"Honduras official example", "HN88CABF00000000000250005469", true},
+		{"Yemen official example", "YE15CBYE0001018861234567891234", true},
+		{"Honduras bad check digit", "HN89CABF00000000000250005469", false},
+		{"Yemen bad check digit", "YE16CBYE0001018861234567891234", false},
+		{"Honduras wrong length", "HN88CABF0000000000025000546", false},
+		{"Yemen wrong length", "YE15CBYE00010188612345678912340", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := Iban(c.iban); got != c.want {
+				t.Errorf("Iban(%q) = %v, want %v", c.iban, got, c.want)
+			}
+		})
+	}
+}
+
 // TestDomainPunycode guards BUG-07: an IDN A-label (punycode) TLD is accepted.
 func TestDomainPunycode(t *testing.T) {
 	if !Domain("example.xn--p1ai") {
