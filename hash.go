@@ -269,7 +269,7 @@ func RGBColor(v string) bool {
 //	       "HNIobiLJJ1MoiNyuzf5ZaUCpMu889Q8AJaWjs") // Returns: true
 //	is.JWT("notajwt") // Returns: false
 func JWT(v string) bool {
-	parts := strings.Split(v, ".")
+	parts := strings.SplitN(v, ".", 4)
 	if len(parts) != 3 {
 		return false
 	}

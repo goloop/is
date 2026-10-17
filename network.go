@@ -106,7 +106,8 @@ func IPv6(ip string) bool {
 // an IP address entered is in the correct format before
 // attempting to use it in network operations.
 func IP(ip string) bool {
-	return IPv4(ip) || IPv6(ip)
+	addr, err := netip.ParseAddr(ip)
+	return err == nil && addr.Zone() == ""
 }
 
 // MAC checks if the string is a valid IEEE 802 MAC address. It accepts the

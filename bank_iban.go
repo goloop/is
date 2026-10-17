@@ -197,7 +197,7 @@ func Iban(iban string, strict ...bool) bool {
 
 	// IBAN must be at least 4 characters long to extract
 	// country code and checksum.
-	if len(iban) < 4 {
+	if len(iban) < 4 || iban[2] < '0' || iban[2] > '9' || iban[3] < '0' || iban[3] > '9' {
 		return false
 	}
 

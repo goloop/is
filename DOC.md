@@ -274,3 +274,7 @@ over-constraining rejects otherwise-valid cards.
 **Validate the value, not its text, when you already have a number.** The
 generic `Latitude`/`Longitude`/`Coordinates` and `IMEI` accept the parsed type
 directly, avoiding a string round-trip.
+
+## Release v2.3.3
+
+Validate IBAN check digits and avoid redundant IP parsing and unbounded JWT splitting.

@@ -89,3 +89,7 @@ Contributions are welcome. Please run `go test ./...`, `go vet ./...` and
 ## License
 
 `is` is released under the MIT License. See [LICENSE](LICENSE).
+
+## Release v2.3.3
+
+Validate IBAN check digits and avoid redundant IP parsing and unbounded JWT splitting.
