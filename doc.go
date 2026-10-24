@@ -20,8 +20,8 @@
 //
 // The package follows several key principles:
 //
-//   - No data cleaning - functions validate data as-is without modification;
-//   - Zero dependencies - minimal external dependencies;
+//   - Explicit normalization contracts for each validator;
+//   - Minimal dependencies; new format validators use the standard library;
 //   - Type safety - extensive use of Go generics where appropriate;
 //   - Performance - optimized for speed and minimal memory allocation.
 //
@@ -47,8 +47,9 @@
 //
 // # Data Cleaning
 //
-// This package does not perform data cleaning. If input needs cleaning,
-// use appropriate tools beforehand. For example, with the companion 'g' package:
+// Non-strict IBAN removes ASCII spaces and uppercases input. Phone removes
+// common separators. ISBN accepts single spaces or hyphens between groups.
+// Other normalization should be performed explicitly before validation:
 //
 //	// Clean IBAN before validation
 //	raw := "GB82 WEST 1234 5698 7654 32"    // contains spaces

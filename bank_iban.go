@@ -92,23 +92,6 @@ import (
 	"github.com/goloop/g/v2"
 )
 
-var ibanLenPatterns = map[string]int{
-	"AL": 28, "AD": 24, "AZ": 28, "BH": 22, "BR": 29, "BG": 22, "CY": 28,
-	"DO": 28, "EG": 29, "GE": 22, "GI": 23, "GR": 27, "GT": 28, "JO": 30,
-	"KZ": 20, "KW": 30, "LV": 21, "LB": 28, "LT": 20, "LU": 20, "MT": 31,
-	"MU": 30, "MD": 24, "PK": 24, "PS": 29, "QA": 29, "RO": 24, "LC": 32,
-	"ST": 25, "SA": 24, "TR": 26, "AE": 23, "VA": 22, "VG": 24, "UA": 29,
-	"SC": 31, "IQ": 23, "BY": 28, "SV": 28, "LY": 25, "SD": 18, "BI": 27,
-	"DJ": 27, "SO": 23, "AT": 20, "BE": 16, "BA": 20, "CR": 22, "HR": 21,
-	"CZ": 24, "FO": 18, "GL": 18, "DK": 18, "EE": 20, "FI": 18, "FR": 27,
-	"DE": 22, "HU": 28, "IS": 26, "IE": 22, "IL": 23, "IT": 27, "XK": 20,
-	"LI": 21, "MK": 19, "MR": 27, "MC": 27, "ME": 22, "NL": 18, "NO": 15,
-	"PL": 28, "PT": 25, "SM": 27, "RS": 22, "SK": 24, "SI": 19, "ES": 24,
-	"SE": 24, "CH": 21, "TL": 23, "TN": 24, "GB": 22, "RU": 33,
-	// Added to the SWIFT IBAN registry in 2023-2024.
-	"FK": 18, "MN": 20, "NI": 28, "OM": 23,
-}
-
 // CalculateIBANChecksum returns the ISO 7064 MOD-97-10 check value of the
 // given (already rearranged) IBAN string. Each letter A-Z is expanded to its
 // two-digit value (A=10, B=11, … Z=35) and each digit keeps its value; the
@@ -203,14 +186,14 @@ func Iban(iban string, strict ...bool) bool {
 
 	// Check if the length matches the expected length for the country.
 	countryCode := iban[0:2]
-	if l, ok := ibanLenPatterns[countryCode]; !ok || l != len(iban) {
+	if !validBBAN(iban[4:], ibanStructures[countryCode]) {
 		return false
 	}
 
 	// Move the first four characters to the end of the string and verify
 	// the ISO 7064 MOD-97-10 check value (a valid IBAN yields exactly 1).
 	rearrangedIban := iban[4:] + iban[0:4]
-	return CalculateIBANChecksum(rearrangedIban) == 1
+	return iban[2:4] >= "02" && iban[2:4] <= "98" && CalculateIBANChecksum(rearrangedIban) == 1
 }
 
 // IBAN is a synonym for the Iban function. This naming approach adheres
@@ -247,4 +230,34 @@ func IBANCountry(iban string, strict ...bool) (string, bool) {
 	}
 
 	return iban[0:2], true
+}
+
+// validBBAN checks the complete national character grammar.
+func validBBAN(s, pattern string) bool {
+	if pattern == "" {
+		return false
+	}
+	pos, count := 0, 0
+	for i := 0; i < len(pattern); i++ {
+		c := pattern[i]
+		if c >= '0' && c <= '9' {
+			count = count*10 + int(c-'0')
+			continue
+		}
+		if c == '!' {
+			continue
+		}
+		for j := 0; j < count; j++ {
+			if pos >= len(s) {
+				return false
+			}
+			digit, letter := s[pos] >= '0' && s[pos] <= '9', s[pos] >= 'A' && s[pos] <= 'Z'
+			if (c == 'n' && !digit) || (c == 'a' && !letter) || (c == 'c' && !digit && !letter) {
+				return false
+			}
+			pos++
+		}
+		count = 0
+	}
+	return pos == len(s)
 }

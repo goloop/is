@@ -68,9 +68,9 @@ func TestEmailAtextLocalPart(t *testing.T) {
 // registry in 2023-2024 validate.
 func TestIbanNewCountries(t *testing.T) {
 	valid := []string{
-		"FK4912345678901234",           // Falkland Islands, 18
+		"FK88SC123456789012",           // Falkland Islands, 18
 		"MN181234567890123456",         // Mongolia, 20
-		"NI31123456789012345678901234", // Nicaragua, 28
+		"NI45BAPR00000013000003558124", // Nicaragua, 28
 		"OM311234567890123456789",      // Oman, 23
 	}
 	for _, iban := range valid {

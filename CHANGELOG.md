@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-10-24
+
+- Add date/time, network prefix/endpoint, BIC, country/currency/postal,
+  ISBN/EAN/GTIN, UUID version and technical-format validators.
+- Check the full national BBAN grammar in both IBAN modes using SWIFT
+  registry release 101; reject checksum-correct values with invalid structures.
+- Add HN and YE registry entries and correct two older invalid test fixtures.
+- Document normalization exceptions and precise format-validation limits.
+
 ## [2.3.3] - 2026-10-18
 
 Validate IBAN check digits and avoid redundant IP parsing and unbounded JWT splitting.

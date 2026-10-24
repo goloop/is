@@ -26,10 +26,9 @@ Every function in `is` answers a single yes/no question about the **format** of
 its input and returns a `bool` (a few return an extra value or an error). Three
 rules hold throughout:
 
-1. **No cleaning, no normalisation.** `is` validates exactly what you pass in.
-   It never trims whitespace, strips separators or lower-cases anything. If the
-   input needs cleaning, clean it first (for example with the `g` package's
-   `Weed`/`Preserve`), then validate.
+1. **Normalization is function-specific.** Non-strict `IBAN` strips ASCII
+   spaces and uppercases input; `Phone` removes common separators; `ISBN`
+   permits single spaces/hyphens between groups. Consult each function's contract.
 2. **Strictness is explicit.** Where a looser and a stricter reading both make
    sense, the stricter one is opt-in through a trailing `strict ...bool`
    argument, so the default never surprises you.
@@ -101,8 +100,8 @@ process-wide:
 |----------------------------|
 | `Visa`, `VisaElectron`, `MasterCard`, `Maestro`, `DiscoverCard`, `JCB`, `UnionPay`, `ChinaUnionPay`, `DinersClub` (+ `DinersClubCarteBlanche`, `DinersClubInternational`, `DinersClubUSAndCanada`), … |
 
-`IBAN` validates an International Bank Account Number (MOD-97 checksum); strict
-mode also enforces the exact per-country length. `IBANCountry` returns the
+`IBAN` checks national BBAN character positions, country length and MOD-97
+in both modes. Strict mode additionally requires unmodified electronic syntax. `IBANCountry` returns the
 two-letter country code when the IBAN is valid. `CalculateIBANChecksum` returns
 the MOD-97 value as an `int` (`-1` on an invalid character).
 
@@ -275,6 +274,11 @@ over-constraining rejects otherwise-valid cards.
 generic `Latitude`/`Longitude`/`Coordinates` and `IMEI` accept the parsed type
 directly, avoiding a string round-trip.
 
-## Release v2.3.3
+## Release v2.4.0
 
-Validate IBAN check digits and avoid redundant IP parsing and unbounded JWT splitting.
+Add structured format validators and enforce national IBAN grammar. See FORMATS.md for contracts.
+
+## Additional structured formats
+
+See [FORMATS.md](FORMATS.md) for dates, network prefixes, identifier checksums,
+regional codes, technical formats and the source versions of reference catalogs.

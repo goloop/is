@@ -7,10 +7,10 @@ you meet in web, financial and general Go applications — emails, phone numbers
 bank cards, IBANs, coordinates, IP/host/URL, hashes, UUIDs, character classes
 and number properties.
 
-Every function answers a single yes/no question about the **format** of its
-input. The package does not clean or normalise data: it validates exactly what
-you pass in. Need to strip spaces or separators first? Clean the input (for
-example with the [`g`](https://github.com/goloop/g) package), then validate.
+Every validator answers a question about format, not real-world assignment or
+existence. Normalization is function-specific: non-strict `IBAN` removes ASCII
+spaces and uppercases input; `Phone` removes common separators. `ISBN` permits
+single spaces and hyphens between groups. Other contracts are documented below.
 
 ## Features
 
@@ -37,7 +37,8 @@ go get -u github.com/goloop/is/v2
 import "github.com/goloop/is/v2"
 ```
 
-Requires Go 1.24 or newer. The package has no third-party dependencies.
+Requires Go 1.24 or newer. Existing dependencies are `g/v2` and `trit/v2`;
+the additional validators use only the Go standard library.
 
 ## Quick start
 
@@ -67,13 +68,24 @@ func main() {
 }
 ```
 
-Because `is` never cleans input, strip noise first when needed:
+For strict electronic IBAN syntax, pass `true`:
 
 ```go
-raw := "GB82 WEST 1234 5698 7654 32"   // contains spaces
-iban := g.Weed(raw, g.Whitespaces)     // remove them
-ok := is.IBAN(iban)                    // validate
+ok := is.IBAN("GB82WEST12345698765432", true)
 ```
+
+## Additional formats
+
+| Area | Validators |
+|------|------------|
+| Dates and time | `Date`, `RFC3339`, `UTCOffset`, `Duration` |
+| Network | `CIDR`, `IPPort`, `Port` |
+| Finance | `BIC`, `CurrencyCode`, national BBAN grammar in `IBAN` |
+| Identifiers | `UUIDv4`, `UUIDv7`, `ISBN`, `EAN`, `GTIN` |
+| Geography | `CountryCode`, `PostalCode` for 11 countries |
+| Technical | `JSON`, `MIME`, `SemVer`, `Base32`, `SHA384` |
+
+See [FORMATS.md](FORMATS.md) for exact syntax, reference versions and limitations.
 
 ## Documentation
 
@@ -90,6 +102,6 @@ Contributions are welcome. Please run `go test ./...`, `go vet ./...` and
 
 `is` is released under the MIT License. See [LICENSE](LICENSE).
 
-## Release v2.3.3
+## Release v2.4.0
 
-Validate IBAN check digits and avoid redundant IP parsing and unbounded JWT splitting.
+Add structured format validators and enforce national IBAN grammar. See FORMATS.md for contracts.
